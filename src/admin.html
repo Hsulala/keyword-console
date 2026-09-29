@@ -23,7 +23,20 @@ table.ed input.in,table.ed select.in{padding:5px 7px;font-size:13.5px}
 .q-ed .r{display:grid;grid-template-columns:2fr 1fr 9em auto;gap:6px}
 tr.sel td{background:color-mix(in srgb,var(--orange) 8%,transparent)}
 .stick{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line)}
-@media (max-width:760px){.li{grid-template-columns:1fr 1fr}.grid2,.catrow,.q-ed .r{grid-template-columns:1fr}}
+.modebar{display:flex;gap:4px;background:var(--pale);border:1px solid var(--line);border-radius:10px;padding:3px}
+.modebar button{border:0;background:transparent;color:var(--muted);padding:5px 10px;border-radius:8px;font-size:13px;font-weight:600}
+.modebar button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.kw-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.kw-card{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:14px;display:grid;gap:10px}
+.kw-card.sel{border-color:color-mix(in srgb,var(--orange) 55%,var(--line));box-shadow:0 0 0 3px color-mix(in srgb,var(--orange) 10%,transparent)}
+.kw-card.hidden{opacity:.55}
+.kw-head{display:flex;gap:10px;align-items:flex-start}
+.kw-head input[type=checkbox]{margin-top:6px}
+.kw-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.kw-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kw-fields .wide{grid-column:1/-1}
+.helpbox{background:var(--pale);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+@media (max-width:760px){.li{grid-template-columns:1fr 1fr}.grid2,.catrow,.q-ed .r,.kw-fields{grid-template-columns:1fr}.kw-cards{grid-template-columns:1fr}}
 </style></head><body>
 <div id="root"></div>
 <script>
@@ -34,7 +47,7 @@ const fdate=s=>s?new Date(s).toLocaleString('zh-TW',{month:'numeric',day:'numeri
 function toast(m,err){const t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
 async function api(p,opt={}){const r=await fetch(p,{credentials:'same-origin',headers:{'content-type':'application/json'},...opt});const j=await r.json().catch(()=>({}));if(r.status===401&&p!=='/api/admin/login'){showLogin();throw new Error('請重新登入');}if(!r.ok)throw new Error(j.error||'錯誤');return j;}
 function armed(b,label,fn){if(b.dataset.armed!=='1'){const o=b.textContent;b.dataset.armed='1';b.textContent=label;b.classList.add('armed');setTimeout(()=>{if(b.isConnected){b.dataset.armed='';b.textContent=o;b.classList.remove('armed');}},3500);return;}fn();}
-let ME=null, C=null, sub='kw', periodId=null, catF='all', qF='', picked=new Set(), sortK='vol';
+let ME=null, C=null, sub='kw', periodId=null, catF='all', qF='', picked=new Set(), sortK='vol', kwMode='cards';
 
 function shell(inner,title){return `<header class="top"><div class="wrap"><div class="brand">關鍵字主控台<small>MaKarma 瑪卡鎷行銷</small></div><div class="grow"></div>${title||''}<button class="btn sm" id="logout" style="background:transparent;color:#b9ccda;border-color:#2c5570">登出</button></div></header><main><div class="wrap">${inner}</div></main>`;}
 function bindShell(){const l=$('#logout');if(l)l.onclick=async()=>{await api('/api/admin/logout',{method:'POST'});showLogin();};}
@@ -51,7 +64,7 @@ window.onhashchange=route;
 async function listClients(){
   const cls=await api('/api/admin/clients');
   $('#root').innerHTML=shell(`
-   <div class="row" style="margin-bottom:16px"><h1 class="grow">所有客戶</h1>${ME.notion?'<button class="btn" id="syncAll">從 Notion 同步已選字</button>':''}${ME.telegram?'<button class="btn" id="tgTest">發送測試通知</button>':''}<button class="btn primary" id="newC">新增客戶</button></div>
+   <div class="row" style="margin-bottom:16px"><h1 class="grow">所有客戶</h1>${ME.notion?'<button class="btn" id="syncAll">從 Notion 同步已選字</button>':''}${ME.telegram?'<button class="btn" id="tgTest">發送測試通知</button>':''}<button class="btn" id="newHy">新增華邑</button><button class="btn primary" id="newC">新增客戶</button></div>
    <div id="syncOut"></div>
    ${ME.telegram?'':'<p class="small" style="color:var(--orange)">▸ 尚未設定 Telegram 通知：請在 Railway Variables 新增 TELEGRAM_BOT_TOKEN 與 TELEGRAM_CHAT_ID。</p>'}
    <form class="card" id="nf" hidden style="margin-bottom:18px"><div class="grid2"><div class="fld"><label>客戶名稱</label><input class="in" name="name" required></div><div class="fld"><label>客戶 PIN 碼（4–6 位數字）</label><input class="in" name="pin" inputmode="numeric" required></div><div class="fld"><label>第一期合約數</label><input class="in n" name="quota" type="number" value="20" min="1"></div></div><div class="row" style="margin-top:12px"><button class="btn primary">建立</button><button type="button" class="btn" id="nfc">取消</button></div></form>
@@ -65,6 +78,7 @@ async function listClients(){
   const sa=$('#syncAll');if(sa)sa.onclick=async()=>{sa.disabled=true;sa.textContent='同步中…';try{const r=await api('/api/admin/notion-sync-all',{method:'POST'});
     $('#syncOut').innerHTML='<div class="card" style="margin-bottom:16px"><b>Notion 同步結果</b><ul class="small" style="margin:8px 0 0;padding-left:1.2em">'+r.map(x=>'<li>'+esc(x.name)+'：'+(x.ok?`合約 ${x.total??'—'} 組；新標記已選 ${x.marked} 組、新增 ${x.added} 組${x.onlyInSystem.length?'；系統有但 Notion 沒有：'+x.onlyInSystem.map(esc).join('、'):''}`:'<span style="color:var(--red)">'+esc(x.error)+'</span>')+'</li>').join('')+'</ul></div>';}catch(e){toast(e.message,true);}sa.disabled=false;sa.textContent='從 Notion 同步已選字';};
   const tt=$('#tgTest');if(tt)tt.onclick=()=>api('/api/admin/telegram-test',{method:'POST'}).then(()=>toast('已發送，請到 Telegram 確認')).catch(e=>toast(e.message,true));
+  const hy=$('#newHy');if(hy)hy.onclick=async()=>{const exists=cls.find(c=>/華邑/.test(c.name));if(exists){location.hash='c/'+exists.id;return;}const pin=prompt('請設定華邑食品的客戶 PIN 碼（4–6 位數字）');if(!pin)return;try{const r=await api('/api/admin/clients',{method:'POST',body:JSON.stringify({name:'華邑食品',pin,quota:20})});toast('已新增華邑食品');location.hash='c/'+r.id;}catch(e){toast(e.message,true);}};
   $('#newC').onclick=()=>{$('#nf').hidden=false;$('#nf [name=name]').focus();};$('#nfc').onclick=()=>$('#nf').hidden=true;
   $('#nf').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);try{const r=await api('/api/admin/clients',{method:'POST',body:JSON.stringify(Object.fromEntries(f))});location.hash='c/'+r.id;}catch(err){toast(err.message,true);}};
 }
@@ -98,26 +112,11 @@ function subKw(){
   const selSet=new Set(C.sels.filter(s=>s.period_id===periodId).map(s=>s.keyword_id));
   const pastSet={};C.sels.filter(s=>s.period_id!==periodId).forEach(s=>{pastSet[s.keyword_id]=C.periods.find(p=>p.id===s.period_id)?.name;});
   const qq=qF.trim().toLowerCase();
-  let ks=C.kws.filter(k=>(catF==='all'||(catF===''?!k.category_id:k.category_id===catF))&&(!qq||k.kw.toLowerCase().includes(qq)||(k.note||'').toLowerCase().includes(qq)));
+  let ks=C.kws.filter(k=>(catF==='all'||(catF===''?!k.category_id:k.category_id===catF))&&(!qq||k.kw.toLowerCase().includes(qq)||(k.note||'').toLowerCase().includes(qq)||(k.intent||'').toLowerCase().includes(qq)||(k.content||'').toLowerCase().includes(qq)));
   ks.sort((a,b)=>sortK==='vol'?((b.vol??-1)-(a.vol??-1)):sortK==='hi'?((b.hi??-1)-(a.hi??-1)):sortK==='sel'?((selSet.has(b.id))-(selSet.has(a.id))):a.kw.localeCompare(b.kw));
   const catOpts=(v)=>`<option value="">未分類</option>`+C.cats.map(c=>`<option value="${c.id}" ${c.id===v?'selected':''}>${esc(c.name)}</option>`).join('');
-  $('#body').innerHTML=`
-  <details class="card" style="margin-bottom:14px"><summary><b>分類管理</b> <span class="muted small">（${C.cats.length} 個分類，客戶頁依此分組）</span></summary><div style="margin-top:12px">
-   ${C.cats.map((c,i)=>`<div class="catrow"><input class="in" data-cn="${c.id}" value="${esc(c.name)}" aria-label="分類名稱"><input class="in" data-cnote="${c.id}" value="${esc(c.note)}" placeholder="分類說明（客戶會看到）" aria-label="分類說明"><span class="small muted">${C.kws.filter(k=>k.category_id===c.id).length} 組</span><button class="btn sm danger" data-cdel="${c.id}">刪除</button></div>`).join('')}
-   <div class="row" style="margin-top:8px"><input class="in" id="newCat" placeholder="新分類名稱" style="max-width:260px"><button class="btn sm" id="addCat">新增分類</button><span class="small muted">刪除分類時，其中的字會移到「未分類」</span></div></div></details>
-  <details class="card" style="margin-bottom:14px"><summary><b>匯入關鍵字</b> <span class="muted small">（Keyword Planner CSV 或直接貼上）</span></summary><div style="margin-top:12px">
-   <p class="small muted">可上傳 Keyword Planner 匯出的 CSV，或從試算表貼上三欄：關鍵字、月搜尋量、頁首出價上限（Tab 分隔）。已存在的字只更新數據。</p>
-   <div class="row"><select class="in" id="impCat" style="max-width:220px">${catOpts(catF!=='all'?catF:'')}</select><input type="file" id="impFile" accept=".csv,.tsv,.txt"><button class="btn sm" id="impGo">匯入貼上的內容</button></div>
-   <textarea class="in" id="impText" rows="4" style="margin-top:8px" placeholder="關鍵字&#9;月搜尋量&#9;頁首出價上限"></textarea></div></details>
-  <div class="stick"><div class="row">
-   <label class="small muted">檢視期別</label><select class="in" id="pSel" style="max-width:220px">${C.periods.map(p=>`<option value="${p.id}" ${p.id===periodId?'selected':''}>${esc(p.name)}（${p.status==='open'?'選字中':'已送出'}）</option>`).join('')}</select>
-   ${P?`<span>已選 <b>${selSet.size}</b>${C.client.contract_total!=null?'':'／'+P.quota}</span>`:''}
-   <select class="in" id="cF" style="max-width:180px"><option value="all">全部分類</option>${catOpts(catF).replace('value=""','value=""'+(catF===''?' selected':''))}</select>
-   <input class="in" id="qF" placeholder="搜尋" value="${esc(qF)}" style="max-width:180px">
-   <select class="in" id="sK" style="max-width:140px">${[['vol','依搜尋量'],['hi','依出價'],['sel','已選優先'],['kw','依字母']].map(([k,l])=>`<option value="${k}" ${sortK===k?'selected':''}>${l}</option>`).join('')}</select>
-   <div class="grow"></div><button class="btn sm dark" id="addKw">新增關鍵字</button></div>
-   <div class="row small" style="margin-top:8px"><span class="muted">已勾選 ${picked.size} 列：</span><select class="in" id="mvCat" style="max-width:180px">${catOpts('')}</select><button class="btn sm" id="bMove">移到此分類</button><button class="btn sm" id="bHide">隱藏</button><button class="btn sm" id="bShow">取消隱藏</button><button class="btn sm danger" id="bDel">刪除</button><span class="muted">顯示 ${ks.length} 組</span></div></div>
-  <div class="tbl-scroll"><table class="ed"><thead><tr><th><input type="checkbox" id="pickAll" aria-label="全選"></th><th>本期選用</th><th>關鍵字</th><th>分類</th><th class="num">月搜尋量</th><th class="num">頁首出價上限</th><th>為什麼選這個字</th><th>建議文章</th><th>可導向</th><th>備註</th><th>推薦</th></tr></thead><tbody>
+  const flag=k=>`${pastSet[k.id]?`<span class="chip past">已在 ${esc(pastSet[k.id])}</span>`:`<label class="small"><input type="checkbox" data-sel="${k.id}" ${selSet.has(k.id)?'checked':''}> 本期選用</label>`}${k.hidden?' <span class="chip">隱藏</span>':''}${k.rec?' <span class="chip rec">顧問推薦</span>':''}`;
+  const tableView=`<div class="tbl-scroll"><table class="ed"><thead><tr><th><input type="checkbox" id="pickAll" aria-label="全選"></th><th>本期選用</th><th>關鍵字</th><th>分類</th><th class="num">月搜尋量</th><th class="num">頁首出價上限</th><th>為什麼選這個字</th><th>建議文章</th><th>可導向</th><th>備註</th><th>推薦</th></tr></thead><tbody>
   ${ks.map(k=>`<tr class="${selSet.has(k.id)?'sel':''}" ${k.hidden?'style="opacity:.45"':''}><td><input type="checkbox" data-pick="${k.id}" ${picked.has(k.id)?'checked':''} aria-label="選取列"></td>
    <td>${pastSet[k.id]?`<span class="chip past">${esc(pastSet[k.id])}</span>`:`<input type="checkbox" data-sel="${k.id}" ${selSet.has(k.id)?'checked':''} aria-label="本期選用">`}${k.hidden?' <span class="chip">隱藏</span>':''}</td>
    <td><input class="in" data-f="kw" data-k="${k.id}" value="${esc(k.kw)}" style="min-width:12em"></td>
@@ -130,16 +129,41 @@ function subKw(){
    <td><input class="in" data-f="note" data-k="${k.id}" value="${esc(k.note)}" style="min-width:8em"></td>
    <td><input type="checkbox" data-f="rec" data-k="${k.id}" ${k.rec?'checked':''} aria-label="顧問推薦"></td></tr>`).join('')}
   </tbody></table></div>`;
+  const cardView=`<div class="kw-cards">${ks.map(k=>`<section class="kw-card ${selSet.has(k.id)?'sel':''} ${k.hidden?'hidden':''}">
+    <div class="kw-head"><input type="checkbox" data-pick="${k.id}" ${picked.has(k.id)?'checked':''} aria-label="選取這組關鍵字"><div class="grow"><label class="small muted">關鍵字</label><input class="in" data-f="kw" data-k="${k.id}" value="${esc(k.kw)}"></div></div>
+    <div class="kw-meta">${flag(k)}<label class="small"><input type="checkbox" data-f="rec" data-k="${k.id}" ${k.rec?'checked':''}> 顧問推薦</label></div>
+    <div class="kw-fields"><div class="fld"><label>分類</label><select class="in" data-f="category_id" data-k="${k.id}">${catOpts(k.category_id)}</select></div><div class="fld"><label>月搜尋量</label><input class="in n" data-f="vol" data-k="${k.id}" type="number" value="${k.vol??''}"></div><div class="fld"><label>頁首出價上限</label><input class="in n" data-f="hi" data-k="${k.id}" type="number" step="0.01" value="${k.hi??''}"></div><div class="fld"><label>可導向頁面</label><input class="in" data-f="path" data-k="${k.id}" value="${esc(k.path)}"></div><div class="fld wide"><label>為什麼選這個字</label><textarea class="in" data-f="intent" data-k="${k.id}">${esc(k.intent)}</textarea></div><div class="fld wide"><label>建議文章</label><textarea class="in" data-f="content" data-k="${k.id}">${esc(k.content)}</textarea></div><div class="fld wide"><label>內部備註</label><textarea class="in" data-f="note" data-k="${k.id}">${esc(k.note)}</textarea></div></div>
+  </section>`).join('')||'<div class="empty">沒有符合條件的關鍵字</div>'}</div>`;
+  $('#body').innerHTML=`
+  <div class="helpbox" style="margin-bottom:14px"><b>編輯提示</b><div class="small muted">卡片模式適合逐題編修，修改欄位後離開欄位會自動儲存；需要大量貼資料或快速掃描時，可切回表格模式。</div></div>
+  <details class="card" style="margin-bottom:14px"><summary><b>分類管理</b> <span class="muted small">（${C.cats.length} 個分類，客戶頁依此分組）</span></summary><div style="margin-top:12px">
+   ${C.cats.map((c,i)=>`<div class="catrow"><input class="in" data-cn="${c.id}" value="${esc(c.name)}" aria-label="分類名稱"><input class="in" data-cnote="${c.id}" value="${esc(c.note)}" placeholder="分類說明（客戶會看到）" aria-label="分類說明"><span class="small muted">${C.kws.filter(k=>k.category_id===c.id).length} 組</span><button class="btn sm danger" data-cdel="${c.id}">刪除</button></div>`).join('')}
+   <div class="row" style="margin-top:8px"><input class="in" id="newCat" placeholder="新分類名稱" style="max-width:260px"><button class="btn sm" id="addCat">新增分類</button><span class="small muted">刪除分類時，其中的字會移到「未分類」</span></div></div></details>
+  <details class="card" style="margin-bottom:14px"><summary><b>匯入關鍵字</b> <span class="muted small">（Keyword Planner CSV 或直接貼上）</span></summary><div style="margin-top:12px">
+   <p class="small muted">可上傳 Keyword Planner 匯出的 CSV，或從試算表貼上三欄：關鍵字、月搜尋量、頁首出價上限（Tab 分隔）。已存在的字只更新數據。</p>
+   <div class="row"><select class="in" id="impCat" style="max-width:220px">${catOpts(catF!=='all'?catF:'')}</select><input type="file" id="impFile" accept=".csv,.tsv,.txt"><button class="btn sm" id="impGo">匯入貼上的內容</button></div>
+   <textarea class="in" id="impText" rows="4" style="margin-top:8px" placeholder="關鍵字&#9;月搜尋量&#9;頁首出價上限"></textarea></div></details>
+  <div class="stick"><div class="row">
+   <label class="small muted">檢視期別</label><select class="in" id="pSel" style="max-width:220px">${C.periods.map(p=>`<option value="${p.id}" ${p.id===periodId?'selected':''}>${esc(p.name)}（${p.status==='open'?'選字中':'已送出'}）</option>`).join('')}</select>
+   ${P?`<span>已選 <b>${selSet.size}</b>${C.client.contract_total!=null?'':'／'+P.quota}</span>`:''}
+   <select class="in" id="cF" style="max-width:180px"><option value="all">全部分類</option>${catOpts(catF).replace('value=""','value=""'+(catF===''?' selected':''))}</select>
+   <input class="in" id="qF" placeholder="搜尋關鍵字、備註、選字理由" value="${esc(qF)}" style="max-width:220px">
+   <select class="in" id="sK" style="max-width:140px">${[['vol','依搜尋量'],['hi','依出價'],['sel','已選優先'],['kw','依字母']].map(([k,l])=>`<option value="${k}" ${sortK===k?'selected':''}>${l}</option>`).join('')}</select>
+   <div class="modebar" role="tablist" aria-label="編輯模式"><button data-kwmode="cards" aria-selected="${kwMode==='cards'}">卡片</button><button data-kwmode="table" aria-selected="${kwMode==='table'}">表格</button></div>
+   <div class="grow"></div><button class="btn sm dark" id="addKw">新增關鍵字</button></div>
+   <div class="row small" style="margin-top:8px"><span class="muted">已勾選 ${picked.size} 列：</span><select class="in" id="mvCat" style="max-width:180px">${catOpts('')}</select><button class="btn sm" id="bMove">移到此分類</button><button class="btn sm" id="bHide">隱藏</button><button class="btn sm" id="bShow">取消隱藏</button><button class="btn sm danger" id="bDel">刪除</button><span class="muted">顯示 ${ks.length} 組</span></div></div>
+  ${kwMode==='cards'?cardView:tableView}`;
   $('#pSel').onchange=e=>{periodId=e.target.value;subKw();};
   $('#cF').onchange=e=>{catF=e.target.value;subKw();};
   $('#qF').oninput=e=>{qF=e.target.value;clearTimeout(window._qt);window._qt=setTimeout(()=>{subKw();const el=$('#qF');el.focus();el.setSelectionRange(el.value.length,el.value.length);},300);};
   $('#sK').onchange=e=>{sortK=e.target.value;subKw();};
+  document.querySelectorAll('[data-kwmode]').forEach(b=>b.onclick=()=>{kwMode=b.dataset.kwmode;subKw();});
   document.querySelectorAll('[data-f]').forEach(el=>el.onchange=async()=>{const k=C.kws.find(x=>x.id===el.dataset.k);const f=el.dataset.f;const v=el.type==='checkbox'?el.checked:el.value;
     try{await api('/api/admin/keywords/'+k.id,{method:'PATCH',body:JSON.stringify({[f]:v})});k[f]=f==='vol'||f==='hi'?(v===''?null:Number(v)):v;if(f==='category_id')k[f]=v||null;toast('已儲存');}catch(e){toast(e.message,true);}});
   document.querySelectorAll('[data-sel]').forEach(el=>el.onchange=async()=>{try{await api('/api/admin/periods/'+periodId+'/toggle',{method:'POST',body:JSON.stringify({keyword_id:el.dataset.sel,selected:el.checked})});
     if(el.checked)C.sels.push({period_id:periodId,keyword_id:el.dataset.sel});else C.sels=C.sels.filter(s=>!(s.period_id===periodId&&s.keyword_id===el.dataset.sel));subKw();}catch(e){toast(e.message,true);}});
   document.querySelectorAll('[data-pick]').forEach(el=>el.onchange=()=>{el.checked?picked.add(el.dataset.pick):picked.delete(el.dataset.pick);subKw();});
-  $('#pickAll').onchange=e=>{ks.forEach(k=>e.target.checked?picked.add(k.id):picked.delete(k.id));subKw();};
+  const pa=$('#pickAll');if(pa)pa.onchange=e=>{ks.forEach(k=>e.target.checked?picked.add(k.id):picked.delete(k.id));subKw();};
   const bulk=async(action,extra={})=>{if(!picked.size)return toast('請先勾選列',true);const r=await api('/api/admin/keywords/bulk',{method:'POST',body:JSON.stringify({ids:[...picked],action,...extra})});picked=new Set();if(r.hidden)toast(`已刪除 ${r.deleted} 組；${r.hidden} 組因過往期別選用過，改為隱藏`);reload();};
   $('#bMove').onclick=()=>bulk('move',{category_id:$('#mvCat').value||null});
   $('#bHide').onclick=()=>bulk('hide');$('#bShow').onclick=()=>bulk('show');
