@@ -1,0 +1,246 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>關鍵字主控台｜MaKarma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>/*CSS*/
+main{padding:24px 0 80px}
+.list{display:grid;gap:0;border-top:2px solid var(--ink)}
+.li{display:grid;grid-template-columns:minmax(0,2fr) 1.3fr 1.2fr 1fr auto;gap:14px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.li:hover{background:var(--pale)}
+.li b{font-size:16px}
+.bar2{height:6px;background:var(--pale);border-radius:3px;overflow:hidden;margin-top:4px}.bar2 i{display:block;height:100%;background:var(--cyan)}
+.sub{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:18px 0 18px;flex-wrap:wrap}
+.sub button{border:0;background:transparent;padding:9px 14px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.sub button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--orange)}
+.linkbox{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--pale);padding:10px 14px;border-radius:10px;font-size:14px}
+.linkbox code{font-family:var(--font);word-break:break-all}
+table.ed td{padding:4px 6px}
+table.ed input.in,table.ed select.in{padding:5px 7px;font-size:13.5px}
+.catrow{display:grid;grid-template-columns:2fr 3fr auto auto;gap:8px;align-items:center;margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fld label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:3px}
+.q-ed{border-bottom:1px solid var(--line);padding:12px 0;display:grid;gap:6px}
+.q-ed .r{display:grid;grid-template-columns:2fr 1fr 9em auto;gap:6px}
+tr.sel td{background:color-mix(in srgb,var(--orange) 8%,transparent)}
+.stick{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line)}
+@media (max-width:760px){.li{grid-template-columns:1fr 1fr}.grid2,.catrow,.q-ed .r{grid-template-columns:1fr}}
+</style></head><body>
+<div id="root"></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=(v,d=0)=>v==null||v===''?'':Number(v).toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fdate=s=>s?new Date(s).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+function toast(m,err){const t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
+async function api(p,opt={}){const r=await fetch(p,{credentials:'same-origin',headers:{'content-type':'application/json'},...opt});const j=await r.json().catch(()=>({}));if(r.status===401&&p!=='/api/admin/login'){showLogin();throw new Error('請重新登入');}if(!r.ok)throw new Error(j.error||'錯誤');return j;}
+function armed(b,label,fn){if(b.dataset.armed!=='1'){const o=b.textContent;b.dataset.armed='1';b.textContent=label;b.classList.add('armed');setTimeout(()=>{if(b.isConnected){b.dataset.armed='';b.textContent=o;b.classList.remove('armed');}},3500);return;}fn();}
+let ME=null, C=null, sub='kw', periodId=null, catF='all', qF='', picked=new Set(), sortK='vol';
+
+function shell(inner,title){return `<header class="top"><div class="wrap"><div class="brand">關鍵字主控台<small>MaKarma 瑪卡鎷行銷</small></div><div class="grow"></div>${title||''}<button class="btn sm" id="logout" style="background:transparent;color:#b9ccda;border-color:#2c5570">登出</button></div></header><main><div class="wrap">${inner}</div></main>`;}
+function bindShell(){const l=$('#logout');if(l)l.onclick=async()=>{await api('/api/admin/logout',{method:'POST'});showLogin();};}
+function showLogin(){$('#root').innerHTML=`<div class="gate"><form class="card" id="lf"><h1>關鍵字主控台</h1><p class="muted">請輸入管理密碼</p><input class="in" type="password" id="pw" autocomplete="current-password" style="letter-spacing:normal;font-size:16px;text-align:left" aria-label="管理密碼"><p id="le" class="small" style="color:var(--red);min-height:1.5em"></p><button class="btn primary" style="width:100%">登入</button></form></div>`;
+  $('#pw').focus();$('#lf').onsubmit=async e=>{e.preventDefault();try{await api('/api/admin/login',{method:'POST',body:JSON.stringify({password:$('#pw').value})});route();}catch(err){$('#le').textContent=err.message;}};}
+async function route(){
+  try{ME=await api('/api/admin/me');}catch(e){return;}
+  const h=location.hash.slice(1);
+  if(h.startsWith('c/'))openClient(h.slice(2)); else listClients();
+}
+window.onhashchange=route;
+
+/* ---------- client list ---------- */
+async function listClients(){
+  const cls=await api('/api/admin/clients');
+  $('#root').innerHTML=shell(`
+   <div class="row" style="margin-bottom:16px"><h1 class="grow">所有客戶</h1>${ME.notion?'<button class="btn" id="syncAll">從 Notion 同步已選字</button>':''}${ME.telegram?'<button class="btn" id="tgTest">發送測試通知</button>':''}<button class="btn primary" id="newC">新增客戶</button></div>
+   <div id="syncOut"></div>
+   ${ME.telegram?'':'<p class="small" style="color:var(--orange)">▸ 尚未設定 Telegram 通知：請在 Railway Variables 新增 TELEGRAM_BOT_TOKEN 與 TELEGRAM_CHAT_ID。</p>'}
+   <form class="card" id="nf" hidden style="margin-bottom:18px"><div class="grid2"><div class="fld"><label>客戶名稱</label><input class="in" name="name" required></div><div class="fld"><label>客戶 PIN 碼（4–6 位數字）</label><input class="in" name="pin" inputmode="numeric" required></div><div class="fld"><label>第一期合約數</label><input class="in n" name="quota" type="number" value="20" min="1"></div></div><div class="row" style="margin-top:12px"><button class="btn primary">建立</button><button type="button" class="btn" id="nfc">取消</button></div></form>
+   <div class="list">${cls.map(c=>{const s=c.stats,p=s.period;return `<div class="li" data-id="${c.id}" tabindex="0" role="link">
+     <div><b>${esc(c.name)}</b>${c.archived?' <span class="chip">封存</span>':''}<div class="small muted">${s.keywords} 組候選字｜${s.periods} 期</div></div>
+     <div>${p?`<div class="small">${esc(p.name)}${s.contract!=null?'｜合約 '+s.contract+'，過往 '+s.past:''}</div><div>本期已選 <b>${s.selected}</b>／${s.limit}</div><div class="bar2"><i style="width:${s.limit?Math.min(100,s.selected/s.limit*100):0}%"></i></div>`:'—'}</div>
+     <div>${p?(p.status==='open'?'<span class="chip open">選字中</span>':'<span class="chip ok">已送出</span> <span class="small muted">'+fdate(p.submitted_at)+'</span>'):''}</div>
+     <div class="small muted">客戶最後造訪<br>${fdate(c.last_client_at)}</div><div class="small muted">▸</div></div>`}).join('')||'<div class="empty">尚無客戶</div>'}</div>`);
+  bindShell();
+  document.querySelectorAll('.li').forEach(el=>{el.onclick=()=>location.hash='c/'+el.dataset.id;el.onkeydown=e=>{if(e.key==='Enter')el.click();};});
+  const sa=$('#syncAll');if(sa)sa.onclick=async()=>{sa.disabled=true;sa.textContent='同步中…';try{const r=await api('/api/admin/notion-sync-all',{method:'POST'});
+    $('#syncOut').innerHTML='<div class="card" style="margin-bottom:16px"><b>Notion 同步結果</b><ul class="small" style="margin:8px 0 0;padding-left:1.2em">'+r.map(x=>'<li>'+esc(x.name)+'：'+(x.ok?`合約 ${x.total??'—'} 組；新標記已選 ${x.marked} 組、新增 ${x.added} 組${x.onlyInSystem.length?'；系統有但 Notion 沒有：'+x.onlyInSystem.map(esc).join('、'):''}`:'<span style="color:var(--red)">'+esc(x.error)+'</span>')+'</li>').join('')+'</ul></div>';}catch(e){toast(e.message,true);}sa.disabled=false;sa.textContent='從 Notion 同步已選字';};
+  const tt=$('#tgTest');if(tt)tt.onclick=()=>api('/api/admin/telegram-test',{method:'POST'}).then(()=>toast('已發送，請到 Telegram 確認')).catch(e=>toast(e.message,true));
+  $('#newC').onclick=()=>{$('#nf').hidden=false;$('#nf [name=name]').focus();};$('#nfc').onclick=()=>$('#nf').hidden=true;
+  $('#nf').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);try{const r=await api('/api/admin/clients',{method:'POST',body:JSON.stringify(Object.fromEntries(f))});location.hash='c/'+r.id;}catch(err){toast(err.message,true);}};
+}
+
+/* ---------- client detail ---------- */
+async function openClient(id,keep){
+  C=await api('/api/admin/clients/'+id);
+  if(!keep){periodId=null;catF='all';qF='';picked=new Set();}
+  if(!periodId||!C.periods.find(p=>p.id===periodId))periodId=C.periods.length?C.periods[C.periods.length-1].id:null;
+  const url=(ME.publicUrl||location.origin)+'/c/'+C.client.token;
+  $('#root').innerHTML=shell(`
+   <p class="small"><a href="#" id="back">◂ 所有客戶</a></p>
+   <div class="row"><h1 class="grow">${esc(C.client.name)}</h1>${ME.notion?'<button class="btn" id="nSync">從 Notion 同步</button>':''}<a class="btn" href="/c/${C.client.token}" target="_blank" rel="noopener">以客戶畫面開啟</a></div>
+   <div class="linkbox" style="margin-top:12px"><span class="muted">客戶連結</span><code id="url">${esc(url)}</code><button class="btn sm" id="copy">複製</button><span class="muted small">客戶需輸入 PIN 碼才能進入</span></div>
+   <div class="sub" role="tablist">${[['kw','關鍵字'],['period','期別與合約'],['report','報告內容'],['iv','訪談表'],['set','設定']].map(([k,l])=>`<button data-s="${k}" aria-selected="${sub===k}">${l}</button>`).join('')}</div>
+   <div id="body"></div>`);
+  bindShell();
+  $('#back').onclick=e=>{e.preventDefault();location.hash='';};
+  const ns=$('#nSync');if(ns)ns.onclick=async()=>{ns.disabled=true;try{const r=await api('/api/admin/clients/'+C.client.id+'/notion-sync',{method:'POST'});toast(`Notion「${r.project}」：合約 ${r.contract_total??'—'} 組，新標記 ${r.marked.length} 組${r.onlyInSystem.length?'；系統多出：'+r.onlyInSystem.join('、'):''}`);reload();}catch(e){toast(e.message,true);ns.disabled=false;}};
+  $('#copy').onclick=()=>{navigator.clipboard.writeText(url).then(()=>toast('已複製連結'));};
+  document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{sub=b.dataset.s;document.querySelectorAll('[data-s]').forEach(x=>x.setAttribute('aria-selected',x===b));renderSub();});
+  renderSub();
+}
+function renderSub(){({kw:subKw,period:subPeriod,report:subReport,iv:subIv,set:subSet})[sub]();}
+const reload=()=>openClient(C.client.id,true);
+
+/* keywords */
+function catName(id){const c=C.cats.find(x=>x.id===id);return c?c.name:'未分類';}
+function subKw(){
+  const P=C.periods.find(p=>p.id===periodId);
+  const selSet=new Set(C.sels.filter(s=>s.period_id===periodId).map(s=>s.keyword_id));
+  const pastSet={};C.sels.filter(s=>s.period_id!==periodId).forEach(s=>{pastSet[s.keyword_id]=C.periods.find(p=>p.id===s.period_id)?.name;});
+  const qq=qF.trim().toLowerCase();
+  let ks=C.kws.filter(k=>(catF==='all'||(catF===''?!k.category_id:k.category_id===catF))&&(!qq||k.kw.toLowerCase().includes(qq)||(k.note||'').toLowerCase().includes(qq)));
+  ks.sort((a,b)=>sortK==='vol'?((b.vol??-1)-(a.vol??-1)):sortK==='hi'?((b.hi??-1)-(a.hi??-1)):sortK==='sel'?((selSet.has(b.id))-(selSet.has(a.id))):a.kw.localeCompare(b.kw));
+  const catOpts=(v)=>`<option value="">未分類</option>`+C.cats.map(c=>`<option value="${c.id}" ${c.id===v?'selected':''}>${esc(c.name)}</option>`).join('');
+  $('#body').innerHTML=`
+  <details class="card" style="margin-bottom:14px"><summary><b>分類管理</b> <span class="muted small">（${C.cats.length} 個分類，客戶頁依此分組）</span></summary><div style="margin-top:12px">
+   ${C.cats.map((c,i)=>`<div class="catrow"><input class="in" data-cn="${c.id}" value="${esc(c.name)}" aria-label="分類名稱"><input class="in" data-cnote="${c.id}" value="${esc(c.note)}" placeholder="分類說明（客戶會看到）" aria-label="分類說明"><span class="small muted">${C.kws.filter(k=>k.category_id===c.id).length} 組</span><button class="btn sm danger" data-cdel="${c.id}">刪除</button></div>`).join('')}
+   <div class="row" style="margin-top:8px"><input class="in" id="newCat" placeholder="新分類名稱" style="max-width:260px"><button class="btn sm" id="addCat">新增分類</button><span class="small muted">刪除分類時，其中的字會移到「未分類」</span></div></div></details>
+  <details class="card" style="margin-bottom:14px"><summary><b>匯入關鍵字</b> <span class="muted small">（Keyword Planner CSV 或直接貼上）</span></summary><div style="margin-top:12px">
+   <p class="small muted">可上傳 Keyword Planner 匯出的 CSV，或從試算表貼上三欄：關鍵字、月搜尋量、頁首出價上限（Tab 分隔）。已存在的字只更新數據。</p>
+   <div class="row"><select class="in" id="impCat" style="max-width:220px">${catOpts(catF!=='all'?catF:'')}</select><input type="file" id="impFile" accept=".csv,.tsv,.txt"><button class="btn sm" id="impGo">匯入貼上的內容</button></div>
+   <textarea class="in" id="impText" rows="4" style="margin-top:8px" placeholder="關鍵字&#9;月搜尋量&#9;頁首出價上限"></textarea></div></details>
+  <div class="stick"><div class="row">
+   <label class="small muted">檢視期別</label><select class="in" id="pSel" style="max-width:220px">${C.periods.map(p=>`<option value="${p.id}" ${p.id===periodId?'selected':''}>${esc(p.name)}（${p.status==='open'?'選字中':'已送出'}）</option>`).join('')}</select>
+   ${P?`<span>已選 <b>${selSet.size}</b>${C.client.contract_total!=null?'':'／'+P.quota}</span>`:''}
+   <select class="in" id="cF" style="max-width:180px"><option value="all">全部分類</option>${catOpts(catF).replace('value=""','value=""'+(catF===''?' selected':''))}</select>
+   <input class="in" id="qF" placeholder="搜尋" value="${esc(qF)}" style="max-width:180px">
+   <select class="in" id="sK" style="max-width:140px">${[['vol','依搜尋量'],['hi','依出價'],['sel','已選優先'],['kw','依字母']].map(([k,l])=>`<option value="${k}" ${sortK===k?'selected':''}>${l}</option>`).join('')}</select>
+   <div class="grow"></div><button class="btn sm dark" id="addKw">新增關鍵字</button></div>
+   <div class="row small" style="margin-top:8px"><span class="muted">已勾選 ${picked.size} 列：</span><select class="in" id="mvCat" style="max-width:180px">${catOpts('')}</select><button class="btn sm" id="bMove">移到此分類</button><button class="btn sm" id="bHide">隱藏</button><button class="btn sm" id="bShow">取消隱藏</button><button class="btn sm danger" id="bDel">刪除</button><span class="muted">顯示 ${ks.length} 組</span></div></div>
+  <div class="tbl-scroll"><table class="ed"><thead><tr><th><input type="checkbox" id="pickAll" aria-label="全選"></th><th>本期選用</th><th>關鍵字</th><th>分類</th><th class="num">月搜尋量</th><th class="num">頁首出價上限</th><th>為什麼選這個字</th><th>建議文章</th><th>可導向</th><th>備註</th><th>推薦</th></tr></thead><tbody>
+  ${ks.map(k=>`<tr class="${selSet.has(k.id)?'sel':''}" ${k.hidden?'style="opacity:.45"':''}><td><input type="checkbox" data-pick="${k.id}" ${picked.has(k.id)?'checked':''} aria-label="選取列"></td>
+   <td>${pastSet[k.id]?`<span class="chip past">${esc(pastSet[k.id])}</span>`:`<input type="checkbox" data-sel="${k.id}" ${selSet.has(k.id)?'checked':''} aria-label="本期選用">`}${k.hidden?' <span class="chip">隱藏</span>':''}</td>
+   <td><input class="in" data-f="kw" data-k="${k.id}" value="${esc(k.kw)}" style="min-width:12em"></td>
+   <td><select class="in" data-f="category_id" data-k="${k.id}" style="min-width:8em">${catOpts(k.category_id)}</select></td>
+   <td><input class="in n" data-f="vol" data-k="${k.id}" type="number" value="${k.vol??''}" style="width:6.5em"></td>
+   <td><input class="in n" data-f="hi" data-k="${k.id}" type="number" step="0.01" value="${k.hi??''}" style="width:6.5em"></td>
+   <td><input class="in" data-f="intent" data-k="${k.id}" value="${esc(k.intent)}" style="min-width:10em"></td>
+   <td><input class="in" data-f="content" data-k="${k.id}" value="${esc(k.content)}" style="min-width:10em"></td>
+   <td><input class="in" data-f="path" data-k="${k.id}" value="${esc(k.path)}" style="min-width:10em"></td>
+   <td><input class="in" data-f="note" data-k="${k.id}" value="${esc(k.note)}" style="min-width:8em"></td>
+   <td><input type="checkbox" data-f="rec" data-k="${k.id}" ${k.rec?'checked':''} aria-label="顧問推薦"></td></tr>`).join('')}
+  </tbody></table></div>`;
+  $('#pSel').onchange=e=>{periodId=e.target.value;subKw();};
+  $('#cF').onchange=e=>{catF=e.target.value;subKw();};
+  $('#qF').oninput=e=>{qF=e.target.value;clearTimeout(window._qt);window._qt=setTimeout(()=>{subKw();const el=$('#qF');el.focus();el.setSelectionRange(el.value.length,el.value.length);},300);};
+  $('#sK').onchange=e=>{sortK=e.target.value;subKw();};
+  document.querySelectorAll('[data-f]').forEach(el=>el.onchange=async()=>{const k=C.kws.find(x=>x.id===el.dataset.k);const f=el.dataset.f;const v=el.type==='checkbox'?el.checked:el.value;
+    try{await api('/api/admin/keywords/'+k.id,{method:'PATCH',body:JSON.stringify({[f]:v})});k[f]=f==='vol'||f==='hi'?(v===''?null:Number(v)):v;if(f==='category_id')k[f]=v||null;toast('已儲存');}catch(e){toast(e.message,true);}});
+  document.querySelectorAll('[data-sel]').forEach(el=>el.onchange=async()=>{try{await api('/api/admin/periods/'+periodId+'/toggle',{method:'POST',body:JSON.stringify({keyword_id:el.dataset.sel,selected:el.checked})});
+    if(el.checked)C.sels.push({period_id:periodId,keyword_id:el.dataset.sel});else C.sels=C.sels.filter(s=>!(s.period_id===periodId&&s.keyword_id===el.dataset.sel));subKw();}catch(e){toast(e.message,true);}});
+  document.querySelectorAll('[data-pick]').forEach(el=>el.onchange=()=>{el.checked?picked.add(el.dataset.pick):picked.delete(el.dataset.pick);subKw();});
+  $('#pickAll').onchange=e=>{ks.forEach(k=>e.target.checked?picked.add(k.id):picked.delete(k.id));subKw();};
+  const bulk=async(action,extra={})=>{if(!picked.size)return toast('請先勾選列',true);const r=await api('/api/admin/keywords/bulk',{method:'POST',body:JSON.stringify({ids:[...picked],action,...extra})});picked=new Set();if(r.hidden)toast(`已刪除 ${r.deleted} 組；${r.hidden} 組因過往期別選用過，改為隱藏`);reload();};
+  $('#bMove').onclick=()=>bulk('move',{category_id:$('#mvCat').value||null});
+  $('#bHide').onclick=()=>bulk('hide');$('#bShow').onclick=()=>bulk('show');
+  $('#bDel').onclick=e=>armed(e.target,'確定刪除',()=>bulk('delete'));
+  $('#addKw').onclick=async()=>{const kw=prompt('新關鍵字');if(!kw)return;await api('/api/admin/clients/'+C.client.id+'/keywords',{method:'POST',body:JSON.stringify({rows:[{kw}],category_id:catF!=='all'&&catF?catF:null})});reload();};
+  document.querySelectorAll('[data-cn]').forEach(el=>el.onchange=()=>api('/api/admin/categories/'+el.dataset.cn,{method:'PATCH',body:JSON.stringify({name:el.value})}).then(()=>{C.cats.find(c=>c.id===el.dataset.cn).name=el.value;toast('已儲存');}));
+  document.querySelectorAll('[data-cnote]').forEach(el=>el.onchange=()=>api('/api/admin/categories/'+el.dataset.cnote,{method:'PATCH',body:JSON.stringify({note:el.value})}).then(()=>toast('已儲存')));
+  document.querySelectorAll('[data-cdel]').forEach(el=>el.onclick=()=>armed(el,'確定刪除',async()=>{await api('/api/admin/categories/'+el.dataset.cdel,{method:'DELETE'});reload();}));
+  $('#addCat').onclick=async()=>{const n=$('#newCat').value.trim();if(!n)return;await api('/api/admin/clients/'+C.client.id+'/categories',{method:'POST',body:JSON.stringify({name:n})});reload();};
+  $('#impFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const rows=await parseKP(f);if(!rows)return;doImport(rows);};
+  $('#impGo').onclick=()=>{const rows=$('#impText').value.split(/\r?\n/).map(l=>l.split('\t')).filter(c=>c[0]&&c[0].trim()).map(c=>({kw:c[0],vol:clean(c[1]),hi:clean(c[2])}));if(!rows.length)return toast('沒有可匯入的內容',true);doImport(rows);};
+}
+const clean=v=>{if(v==null)return null;const s=String(v).replace(/[^0-9.]/g,'');return s===''?null:Number(s);};
+async function doImport(rows){try{const r=await api('/api/admin/clients/'+C.client.id+'/keywords',{method:'POST',body:JSON.stringify({rows,category_id:$('#impCat').value||null})});toast(`新增 ${r.added} 組、更新 ${r.updated} 組`);reload();}catch(e){toast(e.message,true);}}
+async function parseKP(file){const buf=await file.arrayBuffer();const u8=new Uint8Array(buf);let enc='utf-8';if(u8[0]===0xFF&&u8[1]===0xFE)enc='utf-16le';else if(u8[0]===0xFE&&u8[1]===0xFF)enc='utf-16be';else if(u8.length>3&&u8[1]===0&&u8[3]===0)enc='utf-16le';
+  const text=new TextDecoder(enc).decode(buf).replace(/^\uFEFF/,'');const lines=text.split(/\r?\n/).filter(l=>l.trim());const delim=lines.some(l=>l.includes('\t'))?'\t':',';
+  const split=l=>{if(delim==='\t')return l.split('\t').map(s=>s.replace(/^"|"$/g,'').trim());const o=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===','&&!q){o.push(cur.trim());cur='';}else cur+=ch;}o.push(cur.trim());return o;};
+  const hi=lines.findIndex(l=>/關鍵字|Keyword/i.test(l)&&/搜尋|search/i.test(l));if(hi<0){toast('找不到 Keyword Planner 的欄位標題',true);return null;}
+  const H=split(lines[hi]);const col=(...p)=>H.findIndex(h=>p.some(x=>x.test(h)));
+  const cK=col(/^關鍵字$/,/^Keyword$/i),cV=col(/平均每月搜尋/,/Avg\.? monthly searches/i),cH=col(/(頁首|首頁).*高/,/Top of page bid \(high/i);
+  const cC=H.findIndex(h=>(/^競爭/.test(h)||/^Competition$/i.test(h))&&!/索引|index/i.test(h));
+  const cm=v=>!v?'':/低|low/i.test(v)?'低':/中|medium/i.test(v)?'中':/高|high/i.test(v)?'高':'';
+  return lines.slice(hi+1).map(split).filter(c=>c[cK]).map(c=>({kw:c[cK],vol:cV>=0?clean(c[cV]):null,hi:cH>=0?clean(c[cH]):null,comp:cC>=0?cm(c[cC]):''}));}
+
+/* periods */
+function subPeriod(){
+  $('#body').innerHTML=`<div class="card" style="margin-bottom:16px"><div class="row"><b>合約總字數</b><input class="in n" id="ctTot" type="number" min="0" value="${C.client.contract_total??''}" style="max-width:120px" placeholder="未設定"><button class="btn sm" id="ctSave">儲存</button></div>
+   <p class="small muted" style="margin:6px 0 0">設定後，客戶頁會顯示「合約總數／過往已選／本期已選／剩餘」，本期可選數量＝合約總數－過往各期已選。留空則改用下方每一期各自的合約數。</p></div>
+  <div class="tbl-scroll"><table class="ed"><thead><tr><th>期別</th><th class="num">本期合約數<br><span class="small">（未設總數時使用）</span></th><th class="num">已選</th><th>狀態</th><th>送出時間</th><th></th></tr></thead><tbody>
+  ${C.periods.map((p,i)=>{const n=C.sels.filter(s=>s.period_id===p.id).length;const cur=i===C.periods.length-1;return `<tr><td><input class="in" data-pn="${p.id}" value="${esc(p.name)}">${cur?'<div class="small muted">目前期別（客戶頁顯示這一期）</div>':''}</td><td><input class="in n" type="number" min="0" data-pq="${p.id}" value="${p.quota}" style="width:6em"></td><td class="num">${n}</td>
+   <td>${p.status==='open'?'<span class="chip open">選字中</span>':'<span class="chip ok">已送出</span>'}</td><td class="small">${fdate(p.submitted_at)}</td>
+   <td class="row">${p.status==='open'?`<button class="btn sm" data-lock="${p.id}">鎖定</button>`:`<button class="btn sm" data-unlock="${p.id}">解鎖，讓客戶可再修改</button>`}${n===0?`<button class="btn sm danger" data-pdel="${p.id}">刪除</button>`:''}</td></tr>`}).join('')}
+  </tbody></table></div>
+  <form class="card" id="np" style="margin-top:16px"><h3>開新一期</h3><p class="small muted">新一期會成為客戶頁的目前期別；之前各期選過的字會標示「已選過」，不能重複選，也不佔新一期名額。</p>
+   <div class="row"><input class="in" name="name" placeholder="例：第二期（2027 Q1）" required style="max-width:280px"><input class="in n" name="quota" type="number" min="1" value="20" style="max-width:120px" aria-label="合約數"><button class="btn primary">建立</button></div></form>`;
+  $('#ctSave').onclick=()=>api('/api/admin/clients/'+C.client.id,{method:'PATCH',body:JSON.stringify({contract_total:$('#ctTot').value})}).then(()=>{toast('已儲存');reload();});
+  document.querySelectorAll('[data-pn]').forEach(el=>el.onchange=()=>api('/api/admin/periods/'+el.dataset.pn,{method:'PATCH',body:JSON.stringify({name:el.value})}).then(()=>toast('已儲存')));
+  document.querySelectorAll('[data-pq]').forEach(el=>el.onchange=()=>api('/api/admin/periods/'+el.dataset.pq,{method:'PATCH',body:JSON.stringify({quota:el.value})}).then(()=>{toast('已儲存');reload();}));
+  document.querySelectorAll('[data-lock]').forEach(el=>el.onclick=()=>api('/api/admin/periods/'+el.dataset.lock,{method:'PATCH',body:JSON.stringify({status:'submitted'})}).then(reload));
+  document.querySelectorAll('[data-unlock]').forEach(el=>el.onclick=()=>api('/api/admin/periods/'+el.dataset.unlock,{method:'PATCH',body:JSON.stringify({status:'open'})}).then(reload));
+  document.querySelectorAll('[data-pdel]').forEach(el=>el.onclick=()=>armed(el,'確定刪除',()=>api('/api/admin/periods/'+el.dataset.pdel,{method:'DELETE'}).then(reload).catch(e=>toast(e.message,true))));
+  $('#np').onsubmit=async e=>{e.preventDefault();const f=Object.fromEntries(new FormData(e.target));await api('/api/admin/clients/'+C.client.id+'/periods',{method:'POST',body:JSON.stringify(f)});periodId=null;reload();};
+}
+
+/* report */
+function subReport(){
+  const R=C.client.report||{meta:{},findings:[],steps:[],sources:[]};R.meta=R.meta||{};R.findings=R.findings||[];R.steps=R.steps||[];R.sources=R.sources||[];
+  const F=(k,l)=>`<div class="fld"><label>${l}</label><input class="in" data-m="${k}" value="${esc(R.meta[k])}"></div>`;
+  $('#body').innerHTML=`<p class="small muted">客戶頁的「關鍵字報告」分頁會顯示這些內容；「關鍵字與內容對應」會依關鍵字的「建議內容」欄位自動彙整。內文用反引號包住的字會顯示成關鍵字標籤。</p>
+  <div class="card"><div class="grid2">${F('title','報告標題')}${F('date','報告日期')}${F('market','市場')}${F('period','數據期間')}</div><div class="fld" style="margin-top:10px"><label>副標</label><textarea class="in" data-m="subtitle">${esc(R.meta.subtitle)}</textarea></div></div>
+  <h3 style="margin-top:20px">重點結論</h3>${R.findings.map((f,i)=>`<div class="q-ed"><div class="r"><input class="in" data-l="findings" data-i="${i}" data-k="k" value="${esc(f.k)}" placeholder="小標"><input class="in" data-l="findings" data-i="${i}" data-k="t" value="${esc(f.t)}" placeholder="標題" style="grid-column:span 2"><button class="btn sm danger" data-ld="findings" data-i="${i}">刪除</button></div><textarea class="in" data-l="findings" data-i="${i}" data-k="b">${esc(f.b)}</textarea></div>`).join('')}<button class="btn sm" data-la="findings" style="margin-top:8px">新增結論</button>
+  <h3 style="margin-top:20px">執行與追蹤</h3>${R.steps.map((s,i)=>`<div class="q-ed"><div class="r"><input class="in" data-l="steps" data-i="${i}" data-k="t" value="${esc(s.t)}"><input class="in" data-l="steps" data-i="${i}" data-k="d" value="${esc(s.d)}" style="grid-column:span 2"><button class="btn sm danger" data-ld="steps" data-i="${i}">刪除</button></div></div>`).join('')}<button class="btn sm" data-la="steps" style="margin-top:8px">新增步驟</button>
+  <h3 style="margin-top:20px">資料來源說明</h3>${R.sources.map((s,i)=>`<div class="row" style="margin-bottom:6px"><input class="in grow" data-l="sources" data-i="${i}" value="${esc(s)}"><button class="btn sm danger" data-ld="sources" data-i="${i}">刪除</button></div>`).join('')}<button class="btn sm" data-la="sources">新增說明</button>
+  <div class="stick" style="bottom:0;top:auto;margin-top:20px;border-top:1px solid var(--line);border-bottom:0"><button class="btn primary" id="saveR">儲存報告內容</button></div>`;
+  C.client.report=R;
+  document.querySelectorAll('[data-m]').forEach(el=>el.oninput=()=>R.meta[el.dataset.m]=el.value);
+  document.querySelectorAll('[data-l]').forEach(el=>el.oninput=()=>{const L=R[el.dataset.l];if(el.dataset.k)L[+el.dataset.i][el.dataset.k]=el.value;else L[+el.dataset.i]=el.value;});
+  document.querySelectorAll('[data-ld]').forEach(el=>el.onclick=()=>{R[el.dataset.ld].splice(+el.dataset.i,1);subReport();});
+  document.querySelectorAll('[data-la]').forEach(el=>el.onclick=()=>{const k=el.dataset.la;R[k].push(k==='sources'?'':k==='steps'?{t:'',d:''}:{k:'',t:'',b:''});subReport();});
+  $('#saveR').onclick=()=>api('/api/admin/clients/'+C.client.id,{method:'PATCH',body:JSON.stringify({report:R})}).then(()=>toast('已儲存')).catch(e=>toast(e.message,true));
+}
+
+/* interview */
+const ST={prefill:'預填待確認',empty:'待填',done:'已確認'};
+function subIv(){
+  const I=C.client.interview||{meta:{},glossary:[],sections:[]};I.glossary=I.glossary||[];
+  const cnt={prefill:0,empty:0,done:0};I.sections.forEach(s=>s.items.forEach(it=>cnt[it.st]=(cnt[it.st]||0)+1));
+  $('#body').innerHTML=`<p class="small muted">客戶可在客戶頁直接填寫答案；這裡可以編修題目、預填答案與狀態。目前：預填待確認 ${cnt.prefill}、待填 ${cnt.empty}、已確認 ${cnt.done}。</p>
+  <div class="card"><div class="fld"><label>說明文字</label><textarea class="in" id="ivIntro">${esc(I.meta?.intro)}</textarea></div></div>
+  <details class="card" style="margin-top:12px"><summary><b>名詞速讀</b>（${I.glossary.length}）</summary>${I.glossary.map((g,i)=>`<div class="row" style="margin-top:6px"><input class="in" data-g="${i}" data-k="t" value="${esc(g.t)}" style="max-width:220px"><input class="in grow" data-g="${i}" data-k="d" value="${esc(g.d)}"><button class="btn sm danger" data-gd="${i}">刪除</button></div>`).join('')}<button class="btn sm" id="gAdd" style="margin-top:8px">新增名詞</button></details>
+  ${I.sections.map((s,si)=>`<h3 style="margin-top:22px">${esc(s.no)}、<input class="in" data-sec="${si}" value="${esc(s.title)}" style="display:inline-block;width:auto;min-width:14em"></h3>
+   ${s.items.map((it,ii)=>`<div class="q-ed"><div class="r"><input class="in" data-q="${si}_${ii}" data-k="q" value="${esc(it.q)}"><input class="in" data-q="${si}_${ii}" data-k="kw" value="${esc(it.kw)}" placeholder="對應關鍵字"><select class="in" data-q="${si}_${ii}" data-k="st">${Object.entries(ST).map(([k,l])=>`<option value="${k}" ${it.st===k?'selected':''}>${l}</option>`).join('')}</select><button class="btn sm danger" data-qd="${si}_${ii}">刪除</button></div>
+    <input class="in" data-q="${si}_${ii}" data-k="hint" value="${esc(it.hint)}" placeholder="填寫提示">
+    ${it.type==='table'?`<div class="tbl-scroll"><table class="ed"><thead><tr>${it.cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${it.rows.map((r,ri)=>`<tr>${r.map((v,ci)=>`<td><input class="in" data-cell="${si}_${ii}_${ri}_${ci}" value="${esc(v)}"></td>`).join('')}</tr>`).join('')}</tbody></table></div><button class="btn sm" data-ra="${si}_${ii}" style="justify-self:start">新增一列</button>`:`<textarea class="in" data-q="${si}_${ii}" data-k="a">${esc(it.a)}</textarea>`}</div>`).join('')}
+   <button class="btn sm" data-qa="${si}" style="margin-top:8px">新增題目</button>`).join('')}
+  <div class="stick" style="bottom:0;top:auto;margin-top:20px;border-top:1px solid var(--line);border-bottom:0"><button class="btn primary" id="saveI">儲存訪談表</button></div>`;
+  C.client.interview=I;
+  const P=s=>s.split('_').map(Number);
+  $('#ivIntro').oninput=e=>{I.meta=I.meta||{};I.meta.intro=e.target.value;};
+  document.querySelectorAll('[data-sec]').forEach(el=>el.oninput=()=>I.sections[+el.dataset.sec].title=el.value);
+  document.querySelectorAll('[data-q]').forEach(el=>el.oninput=el.onchange=()=>{const [si,ii]=P(el.dataset.q);I.sections[si].items[ii][el.dataset.k]=el.value;});
+  document.querySelectorAll('[data-cell]').forEach(el=>el.oninput=()=>{const [si,ii,ri,ci]=P(el.dataset.cell);I.sections[si].items[ii].rows[ri][ci]=el.value;});
+  document.querySelectorAll('[data-qd]').forEach(el=>el.onclick=()=>armed(el,'確定刪除',()=>{const [si,ii]=P(el.dataset.qd);I.sections[si].items.splice(ii,1);subIv();}));
+  document.querySelectorAll('[data-ra]').forEach(el=>el.onclick=()=>{const [si,ii]=P(el.dataset.ra);const it=I.sections[si].items[ii];it.rows.push(it.cols.map(()=>''));subIv();});
+  document.querySelectorAll('[data-qa]').forEach(el=>el.onclick=()=>{I.sections[+el.dataset.qa].items.push({type:'text',q:'新題目',a:'',st:'empty',src:'',hint:'',kw:''});subIv();});
+  document.querySelectorAll('[data-g]').forEach(el=>el.oninput=()=>I.glossary[+el.dataset.g][el.dataset.k]=el.value);
+  document.querySelectorAll('[data-gd]').forEach(el=>el.onclick=()=>{I.glossary.splice(+el.dataset.gd,1);subIv();});
+  $('#gAdd').onclick=()=>{I.glossary.push({t:'',d:''});subIv();};
+  $('#saveI').onclick=()=>api('/api/admin/clients/'+C.client.id,{method:'PATCH',body:JSON.stringify({interview:I})}).then(()=>toast('已儲存')).catch(e=>toast(e.message,true));
+}
+
+/* settings */
+function subSet(){
+  $('#body').innerHTML=`<div class="card" style="max-width:640px"><div class="fld"><label>客戶名稱</label><div class="row"><input class="in grow" id="sName" value="${esc(C.client.name)}"><button class="btn sm" id="sNameB">儲存</button></div></div>
+  <div class="fld" style="margin-top:14px"><label>重設客戶 PIN 碼（4–6 位數字）</label><div class="row"><input class="in grow" id="sPin" inputmode="numeric" placeholder="輸入新的 PIN 碼"><button class="btn sm" id="sPinB">更新 PIN</button></div><p class="small muted">更新後，客戶需用新 PIN 重新登入。</p></div>
+  <div class="fld" style="margin-top:14px"><label>客戶連結</label><button class="btn sm danger" id="sTok">重新產生連結</button><p class="small muted">舊連結會立即失效，適用於連結外流時。</p></div>
+  <div class="fld" style="margin-top:14px"><label>封存</label><button class="btn sm" id="sArc">${C.client.archived?'取消封存':'封存此客戶'}</button><p class="small muted">封存後客戶連結無法開啟，資料保留。</p></div></div>`;
+  $('#sNameB').onclick=()=>api('/api/admin/clients/'+C.client.id,{method:'PATCH',body:JSON.stringify({name:$('#sName').value})}).then(()=>{toast('已儲存');reload();});
+  $('#sPinB').onclick=()=>api('/api/admin/clients/'+C.client.id,{method:'PATCH',body:JSON.stringify({pin:$('#sPin').value.trim()})}).then(()=>{toast('PIN 已更新');$('#sPin').value='';}).catch(e=>toast(e.message,true));
+  $('#sTok').onclick=e=>armed(e.target,'確定重新產生',()=>api('/api/admin/clients/'+C.client.id,{method:'PATCH',body:JSON.stringify({resetToken:true})}).then(()=>{toast('已產生新連結');reload();}));
+  $('#sArc').onclick=()=>api('/api/admin/clients/'+C.client.id,{method:'PATCH',body:JSON.stringify({archived:!C.client.archived})}).then(reload);
+}
+route();
+</script></body></html>

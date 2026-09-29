@@ -1,0 +1,262 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>__TITLE__｜關鍵字選擇</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>/*CSS*/
+:root{--navy:#142c43;--navy2:#1d3d59;--teal:#14866f;--teal-soft:#e9f7f3;--blue-soft:#eaf1f7;--amber:#a35f0b;--amber-soft:#fff4df;--ink:#18242e;--muted:#5c6d79;--line:#d8e0e6;--bg:#f4f7f9;--card:#fff;--pale:#eef3f6;--shadow:0 16px 40px rgba(20,44,67,.09);--orange:#e07a1f}
+@media (prefers-color-scheme:dark){:root{--ink:#e4edf4;--muted:#9fb1c1;--line:#26405a;--bg:#0b1824;--card:#112436;--pale:#16304a;--teal-soft:#123a33;--blue-soft:#16304a;--amber-soft:#3a2a10}}
+body{background:var(--bg)}
+.shell{max-width:1440px;margin:0 auto;padding:18px 24px 60px}
+.nav{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.nav .brand{font-weight:800;color:var(--ink)} .nav .brand small{display:block;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.tabs2{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);padding:4px;border-radius:12px;margin-left:auto}
+.tabs2 button{border:0;background:transparent;color:var(--muted);padding:7px 14px;border-radius:9px;font-weight:700;font-size:14px}
+.tabs2 button[aria-selected="true"]{background:var(--navy);color:#fff}
+.hero{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;border-radius:22px;padding:28px 30px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-90px;top:-110px;width:310px;height:310px;border:54px solid rgba(85,194,170,.12);border-radius:50%}
+.eyebrow{margin:0 0 6px;color:#a7d9cd;font-size:.8rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase}
+.hero h1{font-size:clamp(1.7rem,3vw,2.5rem);letter-spacing:-.02em;max-width:850px}
+.lede{max-width:860px;margin:12px 0 0;color:#dce8f0}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px;max-width:900px;position:relative;z-index:1}
+.summary div{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);border-radius:14px;padding:12px 15px}
+.summary strong{display:block;font-size:1.5rem;line-height:1.2}
+.summary span{display:block;color:#c8d7e2;font-size:.82rem;margin-top:4px}
+.guide{margin:18px 0;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--teal);border-radius:14px;padding:15px 18px}
+.guide strong{display:block;color:var(--ink);margin-bottom:2px}
+.guide p{margin:0;color:var(--muted);font-size:14.5px}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+.toolbar{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:grid;grid-template-columns:minmax(200px,1.5fr) repeat(3,minmax(140px,.7fr));gap:12px;position:sticky;top:10px;z-index:5;box-shadow:0 10px 28px rgba(20,44,67,.07)}
+.toolbar label{display:block;font-weight:750;font-size:.8rem;color:var(--ink);margin-bottom:5px}
+.toolbar input,.toolbar select{width:100%;height:42px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);padding:0 12px;font:inherit}
+.toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(20,134,111,.13)}
+.resulthead{display:flex;justify-content:space-between;gap:16px;margin:14px 2px 10px;color:var(--muted);font-size:.9rem}
+.resulthead strong{color:var(--ink)}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.kcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;transition:border-color .18s,box-shadow .18s;position:relative;display:flex;flex-direction:column}
+.kcard:hover{border-color:#b9c8d1;box-shadow:0 10px 26px rgba(20,44,67,.08)}
+.kcard.on{border-color:var(--teal);box-shadow:0 0 0 2px rgba(20,134,111,.18)}
+.kcard.past{opacity:.62}
+.khead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ck{appearance:none;width:26px;height:26px;border:2px solid #9aabb7;border-radius:7px;background:var(--card);cursor:pointer;display:grid;place-items:center;flex:none;margin:0}
+.ck:checked{background:var(--teal);border-color:var(--teal)}
+.ck:checked::after{content:"";width:7px;height:13px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.ck:disabled{cursor:not-allowed;opacity:.5}
+.no{font-weight:800;font-size:12.5px;letter-spacing:.08em;color:var(--ink)}
+.tag{font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--blue-soft);color:var(--navy2)}
+.tag.rec{background:var(--amber-soft);color:var(--amber)}
+.tag.past{background:var(--pale);color:var(--muted)}
+.tag.nodata{background:var(--pale);color:var(--muted);font-weight:600}
+@media (prefers-color-scheme:dark){.tag{color:#cfe0ee}}
+.ktitle{font-size:18px;font-weight:800;line-height:1.4;margin:12px 0 8px 36px}
+.kmain{margin-left:36px;font-size:14.5px}.kmain span{color:var(--muted);margin-right:10px}.kmain b{font-size:15.5px}
+.kdesc{margin:8px 0 0 36px;color:var(--muted);font-size:14.5px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:12px;margin-top:14px;background:var(--bg);overflow:hidden}
+.metrics div{padding:9px 12px;border-left:1px solid var(--line)}.metrics div:first-child{border-left:0}
+.metrics span{display:block;font-size:12px;color:var(--muted)}.metrics b{font-size:16px;font-variant-numeric:tabular-nums}
+.more{margin-top:auto;padding-top:12px}
+.more details{border-top:1px solid var(--line);padding-top:10px}
+.more summary{cursor:pointer;color:var(--teal);font-weight:700;font-size:14px;list-style:none;display:flex;justify-content:space-between}
+.more summary::-webkit-details-marker{display:none}
+.more summary::after{content:"+";font-size:18px;line-height:1}.more details[open] summary::after{content:"−"}
+.more dl{margin:10px 0 0;display:grid;grid-template-columns:5.5em 1fr;gap:6px 10px;font-size:14px}.more dt{color:var(--muted)}.more dd{margin:0}
+.side{position:sticky;top:10px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 10px 28px rgba(20,44,67,.07)}
+.side h2{font-size:19px}.side .sub{color:var(--muted);font-size:14px;margin:6px 0 14px}
+.countbox{background:var(--navy);color:#fff;border-radius:14px;padding:14px 16px;display:flex;align-items:baseline;gap:6px}
+.countbox b{font-size:30px;line-height:1}.countbox .of{color:#b8c9d6}.countbox .st{margin-left:auto;color:#c8d7e2;font-size:14px}
+.pbar{height:8px;background:var(--pale);border-radius:4px;margin-top:12px;overflow:hidden;display:flex}
+.pbar i{display:block;height:100%}
+.remain{font-size:14px;color:var(--muted);margin-top:6px}
+.slist{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--line);max-height:38vh;overflow:auto}
+.slist li{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.slist li .n{font-weight:800;font-size:12.5px;color:var(--muted);width:1.8em}
+.slist li .x{margin-left:auto;border:0;background:none;color:var(--muted);font-size:17px;padding:0 4px}
+.slist .empty2{color:var(--muted);font-size:14px;padding:10px 0}
+.sbtn{width:100%;margin-top:12px;height:46px;border-radius:12px;border:0;font-weight:800;font-size:15px}
+.sbtn.go{background:var(--teal);color:#fff}.sbtn.go.armed{background:#b3412f}.sbtn.go:disabled{background:#a9b6bf;cursor:default}
+.sbtn.ghost{background:var(--pale);color:var(--ink)}
+.hint2{font-size:12.5px;color:var(--muted);margin-top:12px}
+.donebox{background:var(--teal-soft);border:1px solid rgba(20,134,111,.35);color:var(--ink);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:14px}
+.pastbox{margin-top:14px;font-size:14px}.pastbox summary{cursor:pointer;color:var(--muted)}
+.pastbox ul{margin:8px 0 0;padding-left:1.1em;color:var(--muted)}
+.mbar{display:none}
+section.pane{padding:22px 0 60px}
+.plain{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;margin-top:4px}
+.findings{display:grid;grid-template-columns:1fr 1fr;border-top:2px solid var(--ink);margin-top:14px}
+.finding{padding:18px 18px 18px 0;border-bottom:1px solid var(--line)}
+.finding:nth-child(even){padding-left:18px;border-left:1px solid var(--line)}
+.finding .k{color:var(--teal);font-weight:700;font-size:13.5px}
+.finding p{color:var(--muted);margin:6px 0 0}
+code.kwc{font-family:inherit;background:var(--pale);padding:0 6px;border-radius:5px;color:var(--ink)}
+.steps{list-style:none;padding:0;margin:14px 0 0;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;border-top:2px solid var(--ink);padding-top:14px}
+.steps b{display:block}
+.q{padding:18px 0;border-bottom:1px solid var(--line)}
+.q .qt{font-weight:700}
+.q .hint{color:var(--muted);font-size:13px;margin:2px 0 8px}
+.q .saved{font-size:12px;color:var(--teal);margin-left:8px}
+.sec{margin-top:30px}.sec h2 span{color:var(--teal);margin-right:8px}
+.q table input{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:5px 7px;font:inherit;font-size:14px;width:100%;min-width:8em}
+.gloss{display:grid;grid-template-columns:repeat(3,1fr);gap:0 24px}.gloss div{padding:10px 0;border-bottom:1px solid var(--line)}.gloss b{display:block}
+@media (max-width:1100px){.workspace{grid-template-columns:1fr}.side{position:static}.toolbar{grid-template-columns:1fr 1fr}}
+@media (max-width:760px){.shell{padding:12px 12px 90px}.cards{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}.toolbar{position:static;grid-template-columns:1fr}.hero{padding:22px 20px}.ktitle,.kmain,.kdesc{margin-left:0}.findings,.steps,.gloss{grid-template-columns:1fr}.finding:nth-child(even){padding-left:0;border-left:0}
+ .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--navy);color:#fff;padding:10px 14px;gap:12px;align-items:center;box-shadow:0 -6px 20px rgba(0,0,0,.2)}
+ .mbar b{font-size:20px}.mbar .grow{flex:1}.mbar button{border:0;background:var(--teal);color:#fff;font-weight:800;border-radius:10px;padding:9px 14px}}
+</style></head><body>
+<div id="gate" class="gate" hidden><form class="card" id="pinForm"><h1 id="gName">關鍵字選擇</h1><p class="muted">請輸入顧問提供的 PIN 碼</p><input class="in" id="pin" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="PIN 碼"><p id="pinErr" class="small" style="color:var(--red);min-height:1.5em"></p><button class="btn primary" style="width:100%">進入</button></form></div>
+<div id="app" hidden></div>
+<script>
+const TOKEN=location.pathname.split('/').pop();
+const API=p=>'/api/c/'+TOKEN+p;
+let D=null, tab='select', filter='all', q='', onlySel=false;
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=(v,d=0)=>v==null?'':Number(v).toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
+function toast(m,err){const t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
+async function api(p,opt={}){const r=await fetch(API(p),{credentials:'same-origin',headers:{'content-type':'application/json'},...opt});const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(j.error||'錯誤'),{status:r.status,body:j});return j;}
+async function load(){
+  try{D=await api('/data');document.getElementById('gate').hidden=true;document.getElementById('app').hidden=false;document.title=D.name+'｜關鍵字選擇';render();}
+  catch(e){ if(e.status===401){document.getElementById('gate').hidden=false;document.getElementById('pin').focus();} else document.body.innerHTML='<div class="gate"><div class="card"><h1>無法載入</h1><p class="muted">'+esc(e.message)+'</p></div></div>'; }
+}
+document.getElementById('pinForm').onsubmit=async e=>{e.preventDefault();const pin=document.getElementById('pin').value.trim();
+  try{await api('/pin',{method:'POST',body:JSON.stringify({pin})});load();}catch(err){document.getElementById('pinErr').textContent=err.message;}};
+
+function render(){
+  const hasReport=D.report&&((D.report.findings||[]).length||(D.report.steps||[]).length);
+  document.getElementById('app').innerHTML=`<div class="shell">
+   <div class="nav"><div class="brand">${esc(D.name)}<small>MaKarma 瑪卡鎷行銷｜SEO 關鍵字</small></div>
+    <div class="tabs2" role="tablist">
+     <button role="tab" data-t="select" aria-selected="${tab==='select'}">關鍵字選題</button>
+     ${hasReport?`<button role="tab" data-t="report" aria-selected="${tab==='report'}">關鍵字報告</button>`:''}
+     ${D.interview?`<button role="tab" data-t="iv" aria-selected="${tab==='iv'}">產業訪談表</button>`:''}
+    </div></div>
+   <main id="pane"></main></div><div class="mbar" id="mbar"></div>`;
+  document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render();window.scrollTo(0,0);});
+  if(tab==='select')renderSelect(); else if(tab==='report')renderReport(); else renderIv();
+}
+
+/* ---------- selection ---------- */
+let prio='all', show='all';
+function counts(){const P=D.period;const n=D.selected.length;return{n,quota:P?P.quota:0,rem:P?Math.max(0,P.quota-n):0};}
+function catName(id){const c=D.cats.find(x=>x.id===id);return c?c.name:'未分類';}
+function catsList(){const list=D.cats.filter(c=>D.kws.some(k=>k.c===c.id));if(D.kws.some(k=>!k.c||!D.cats.find(c=>c.id===k.c)))list.push({id:'',name:'未分類',note:''});return list;}
+function ordered(){const order=catsList().map(c=>c.id);return D.kws.slice().sort((a,b)=>(order.indexOf(a.c||'')-order.indexOf(b.c||''))||((!!D.past[a.id])-(!!D.past[b.id]))||(b.rec-a.rec)||((b.vol||0)-(a.vol||0)));}
+function renderSelect(){
+  const P=D.period; const pane=document.getElementById('pane');
+  if(!P){pane.innerHTML='<section class="pane"><div class="plain">目前沒有開放選題的期別，請聯繫您的顧問。</div></section>';return;}
+  const locked=P.status!=='open'; const cand=D.kws.filter(k=>!D.past[k.id]).length;
+  const withData=D.kws.filter(k=>!D.past[k.id]&&k.vol!=null).length;
+  pane.innerHTML=`
+  <section class="hero"><p class="eyebrow">SEO KEYWORD SELECTION｜${esc(P.name)}</p>
+   <h1>SEO 關鍵字候選題庫</h1>
+   <p class="lede">這份頁面提供 ${cand} 組候選關鍵字與建議文章題目。請依品牌方向與業務優先順序，從中挑選 ${P.quota} 組作為本期的 SEO 文章題目。</p>
+   <div class="summary">
+    <div><strong>${cand}</strong><span>候選關鍵字</span></div>
+    <div><strong>${P.quota}</strong><span>本期可選</span></div>
+    ${D.contract!=null?`<div><strong>${D.contract}</strong><span>合約總篇數</span></div><div><strong>${D.pastCount}</strong><span>過往已選</span></div>`:`<div><strong>${withData}</strong><span>有 Google Ads 數據</span></div>`}
+   </div></section>
+  <div class="guide"><strong>如何閱讀數據</strong><p>月搜尋量與頁首出價上限來自 Google Ads 關鍵字規劃工具（台灣）；頁首出價越高，代表越多廣告主願意為這個字付費。「優先推薦」為顧問建議先做的題目。勾選會自動儲存，選好後按「送出確認」。</p></div>
+  <div class="workspace">
+   <div>
+    <div class="toolbar">
+     <div><label for="q">搜尋題目或關鍵字</label><input id="q" type="search" placeholder="輸入關鍵字" value="${esc(q)}"></div>
+     <div><label for="fc">分類</label><select id="fc"><option value="all">全部分類</option>${catsList().map(c=>`<option value="${c.id}" ${filter===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
+     <div><label for="fp">策略優先度</label><select id="fp"><option value="all">全部</option><option value="rec" ${prio==='rec'?'selected':''}>優先推薦</option></select></div>
+     <div><label for="fs">顯示</label><select id="fs"><option value="all">全部候選</option><option value="sel" ${show==='sel'?'selected':''}>只看已選</option><option value="unsel" ${show==='unsel'?'selected':''}>只看未選</option><option value="past" ${show==='past'?'selected':''}>過往已選</option></select></div>
+    </div>
+    <div class="resulthead"><span id="rc"></span><span>展開卡片可查看可導向與備註</span></div>
+    <div class="cards" id="cards"></div>
+   </div>
+   <aside class="side" id="side"></aside>
+  </div>`;
+  document.getElementById('q').oninput=e=>{q=e.target.value;renderCards();};
+  document.getElementById('fc').onchange=e=>{filter=e.target.value;renderCards();};
+  document.getElementById('fp').onchange=e=>{prio=e.target.value;renderCards();};
+  document.getElementById('fs').onchange=e=>{show=e.target.value;renderCards();};
+  renderCards(); renderSide();
+}
+function visible(){const qq=q.trim().toLowerCase();
+  return ordered().filter(k=>(filter==='all'||(k.c||'')===filter)&&(prio==='all'||k.rec)
+   &&(show==='all'?true:show==='sel'?D.selected.includes(k.id):show==='unsel'?(!D.selected.includes(k.id)&&!D.past[k.id]):!!D.past[k.id])
+   &&(!qq||[k.kw,k.content,k.intent,k.note,k.path].join(' ').toLowerCase().includes(qq)));}
+function renderCards(){
+  const all=ordered(); const idx=new Map(all.map((k,i)=>[k.id,i+1])); const vs=visible(); const c=counts(); const locked=D.period.status!=='open';
+  document.getElementById('rc').innerHTML=`顯示 <strong>${vs.length}</strong> / ${all.length} 組`;
+  document.getElementById('cards').innerHTML=vs.map(k=>{const on=D.selected.includes(k.id),past=D.past[k.id];const dis=past||locked||(!on&&c.rem===0);
+    const title=k.content||k.kw;
+    return `<article class="kcard ${on?'on':''} ${past?'past':''}"><div class="khead">
+     <input type="checkbox" class="ck" data-id="${k.id}" ${on||past?'checked':''} ${dis?'disabled':''} aria-label="選擇 ${esc(k.kw)}" title="${past?'已在'+esc(past)+'選過':(!on&&c.rem===0&&!locked?'已達本期可選數量':'')}">
+     <span class="no">NO. ${String(idx.get(k.id)).padStart(2,'0')}</span><span class="tag">${esc(catName(k.c))}</span>
+     ${k.rec?'<span class="tag rec">優先推薦</span>':''}${past?`<span class="tag past">已選過｜${esc(past)}</span>`:''}${k.vol==null?'<span class="tag nodata">探索型／待驗證</span>':''}</div>
+     <div class="ktitle">${esc(title)}</div>
+     ${k.content?`<div class="kmain"><span>主關鍵字</span><b>${esc(k.kw)}</b></div>`:''}
+     ${k.intent?`<p class="kdesc">${esc(k.intent)}</p>`:''}
+     <div class="metrics"><div><span>平均月搜尋量</span><b>${k.vol!=null?fmt(k.vol):'—'}</b></div><div><span>廣告競爭程度</span><b>${esc(k.comp)||'—'}</b></div><div><span>頁首出價上限</span><b>${k.hi!=null?'NT$'+fmt(k.hi,2):'—'}</b></div></div>
+     ${(k.path||k.note)?`<div class="more"><details><summary>查看可導向與備註</summary><dl>${k.path?`<dt>可導向</dt><dd>${esc(k.path)}</dd>`:''}${k.note?`<dt>備註</dt><dd>${esc(k.note)}</dd>`:''}</dl></details></div>`:''}
+    </article>`;}).join('')||'<div class="plain" style="grid-column:1/-1">沒有符合條件的關鍵字</div>';
+  document.querySelectorAll('#cards .ck').forEach(cb=>cb.onchange=()=>toggle(cb.dataset.id,cb.checked,cb));
+}
+function renderSide(){
+  const P=D.period,c=counts(),locked=P.status!=='open';
+  const sel=ordered().filter(k=>D.selected.includes(k.id)); const past=ordered().filter(k=>D.past[k.id]);
+  const T=D.contract;
+  const st=locked?'已送出':c.n===0?'尚未開始':c.rem===0?'已選滿':'選擇中';
+  document.getElementById('side').innerHTML=`<h2>本期已選</h2><p class="sub">最多選擇 ${P.quota} 組${T!=null?`（合約共 ${T} 篇，過往已選 ${D.pastCount} 篇）`:''}。</p>
+   <div class="countbox"><b>${c.n}</b><span class="of">/ ${P.quota}</span><span class="st">${st}</span></div>
+   <div class="pbar"><i style="width:${P.quota?Math.min(100,c.n/P.quota*100):0}%;background:var(--teal)"></i></div>
+   <div class="remain">${locked?'這一期已送出，如需調整請聯繫顧問。':'還可選擇 '+c.rem+' 組'}</div>
+   <ul class="slist">${sel.length?sel.map((k,i)=>`<li><span class="n">${String(i+1).padStart(2,'0')}</span><span>${esc(k.kw)}</span>${locked?'':`<button class="x" data-rm="${k.id}" aria-label="移除 ${esc(k.kw)}">×</button>`}</li>`).join(''):'<li class="empty2">尚未選擇題目</li>'}</ul>
+   ${locked?`<div class="donebox">已於 ${P.submitted_at?new Date(P.submitted_at).toLocaleDateString('zh-TW'):''} 送出，顧問已收到通知。</div>`:`<button class="sbtn go" id="submit" ${c.n?'':'disabled'}>送出確認</button>`}
+   <button class="sbtn ghost" id="csv" ${c.n?'':'disabled'}>下載已選清單 CSV</button>
+   ${past.length?`<details class="pastbox"><summary>過往已選 ${past.length} 組（不需要再選）</summary><ul>${past.map(k=>`<li>${esc(k.kw)}｜${esc(D.past[k.id])}</li>`).join('')}</ul></details>`:''}
+   <p class="hint2">勾選會即時儲存；送出後會通知顧問並鎖定本期選題。</p>`;
+  document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>toggle(b.dataset.rm,false));
+  const sb=document.getElementById('submit'); if(sb)sb.onclick=()=>armedSubmit(sb);
+  document.getElementById('csv').onclick=downloadCsv;
+  const mb=document.getElementById('mbar'); if(mb) mb.innerHTML=`<div><b>${c.n}</b> / ${P.quota}<div class="small" style="color:#c8d7e2">${st}</div></div><div class="grow"></div>${locked?'':`<button id="msubmit" ${c.n?'':'disabled'}>送出確認</button>`}`;
+  const ms=document.getElementById('msubmit'); if(ms) ms.onclick=()=>armedSubmit(ms);
+}
+async function toggle(id,on,cb){
+  try{await api('/select',{method:'POST',body:JSON.stringify({keyword_id:id,selected:on})});
+    if(on){if(!D.selected.includes(id))D.selected.push(id);}else D.selected=D.selected.filter(x=>x!==id);
+    renderCards();renderSide();}
+  catch(e){if(cb)cb.checked=!on;toast(e.message,true);}}
+function armedSubmit(b){const c=counts();
+  if(b.dataset.armed!=='1'){if(!c.n){toast('尚未選擇任何關鍵字',true);return;}b.dataset.armed='1';b.textContent=`確定送出 ${c.n} 組？再按一次`;b.classList.add('armed');setTimeout(()=>{if(b.isConnected){b.dataset.armed='';b.textContent='送出確認';b.classList.remove('armed');}},4000);return;}
+  b.disabled=true;api('/submit',{method:'POST'}).then(()=>{toast('已送出，顧問會收到通知');load();}).catch(e=>{b.disabled=false;toast(e.message,true);});}
+function downloadCsv(){const rows=[['編號','分類','主關鍵字','建議文章','月搜尋量','頁首出價上限','可導向']];
+  ordered().filter(k=>D.selected.includes(k.id)).forEach((k,i)=>rows.push([i+1,catName(k.c),k.kw,k.content||'',k.vol??'',k.hi??'',k.path||'']));
+  const csv='\uFEFF'+rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=D.name+'_'+D.period.name+'_選題.csv';a.click();}
+
+/* ---------- report ---------- */
+function rich(s){return esc(s).replace(/`([^`]+)`/g,'<code class="kwc">$1</code>');}
+function renderReport(){const R=D.report||{};const m=R.meta||{};
+  const groups={};D.kws.filter(k=>k.content).forEach(k=>(groups[k.content]=groups[k.content]||[]).push(k));
+  document.getElementById('pane').innerHTML=`<div><section class="pane plain">
+   <h1>${esc(m.title||'關鍵字策略報告')}</h1>${m.subtitle?`<p class="muted" style="max-width:44em">${esc(m.subtitle)}</p>`:''}
+   <p class="small muted">${[m.date&&'報告日期 '+m.date,m.market&&'市場 '+m.market,m.period&&'數據期間 '+m.period].filter(Boolean).map(esc).join('｜')}</p>
+   ${(R.findings||[]).length?`<h2 style="margin-top:28px">重點結論</h2><div class="findings">${R.findings.map(f=>`<div class="finding"><div class="k">${esc(f.k)}</div><h3>${esc(f.t)}</h3><p>${rich(f.b)}</p></div>`).join('')}</div>`:''}
+   ${Object.keys(groups).length?`<h2 style="margin-top:32px">關鍵字與內容對應</h2><div class="tbl-scroll" style="margin-top:12px"><table><thead><tr><th>建議內容</th><th>對應關鍵字</th><th class="num">月搜尋量合計</th></tr></thead><tbody>${Object.entries(groups).map(([k,ks])=>`<tr><td><b>${esc(k)}</b></td><td>${ks.map(x=>esc(x.kw)).join('、')}</td><td class="num">${fmt(ks.reduce((a,x)=>a+(x.vol||0),0))}</td></tr>`).join('')}</tbody></table></div>`:''}
+   ${(R.steps||[]).length?`<h2 style="margin-top:32px">執行與追蹤</h2><ol class="steps">${R.steps.map(s=>`<li><b>${esc(s.t)}</b><span class="muted">${esc(s.d)}</span></li>`).join('')}</ol>`:''}
+   ${(R.sources||[]).length?`<h3 style="margin-top:32px">資料來源與判讀說明</h3><ul class="muted small">${R.sources.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:''}
+  </section></div>`;}
+
+/* ---------- interview ---------- */
+const timers={};
+function renderIv(){const I=D.interview;
+  document.getElementById('pane').innerHTML=`<div><section class="pane plain">
+   <h1>${esc(I.meta?.title||'產業深度訪談表')}</h1><p class="muted">${esc(I.meta?.intro||'')}</p><p class="small muted">填寫內容會自動儲存，可以分次完成。</p>
+   ${(I.glossary||[]).length?`<h2 style="margin-top:24px">名詞速讀</h2><div class="gloss">${I.glossary.map(g=>`<div><b>${esc(g.t)}</b><span class="muted small">${esc(g.d)}</span></div>`).join('')}</div>`:''}
+   ${(I.sections||[]).map((s,si)=>`<div class="sec"><h2><span>${esc(s.no)}</span>${esc(s.title)}</h2>${s.intro?`<p class="muted small">${esc(s.intro)}</p>`:''}
+     ${s.items.map((it,ii)=>`<div class="q"><div class="qt">${esc(it.q)}<span class="saved" id="sv_${si}_${ii}"></span></div>${it.hint?`<div class="hint">${esc(it.hint)}${it.st==='prefill'?'　▸ 已預填，請確認或修正':''}</div>`:(it.st==='prefill'?'<div class="hint">已預填，請確認或修正</div>':'')}
+      ${it.type==='table'?`<div class="tbl-scroll"><table><thead><tr>${it.cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${it.rows.map((r,ri)=>`<tr>${r.map((v,ci)=>`<td><input data-si="${si}" data-ii="${ii}" data-ri="${ri}" data-ci="${ci}" value="${esc(v)}" aria-label="${esc(it.cols[ci])}"></td>`).join('')}</tr>`).join('')}</tbody></table></div><button class="btn sm" style="margin-top:6px" data-addrow="${si}_${ii}">新增一列</button>`
+      :`<textarea class="in" rows="3" data-si="${si}" data-ii="${ii}" aria-label="回答">${esc(it.a)}</textarea>`}</div>`).join('')}</div>`).join('')}
+  </section></div>`;
+  document.querySelectorAll('#pane textarea[data-si],#pane input[data-si]').forEach(el=>el.oninput=()=>{const it=D.interview.sections[el.dataset.si].items[el.dataset.ii];
+    if(it.type==='table')it.rows[el.dataset.ri][el.dataset.ci]=el.value;else it.a=el.value;schedule(+el.dataset.si,+el.dataset.ii);});
+  document.querySelectorAll('[data-addrow]').forEach(b=>b.onclick=()=>{const [si,ii]=b.dataset.addrow.split('_').map(Number);const it=D.interview.sections[si].items[ii];it.rows.push(it.cols.map(()=>''));schedule(si,ii);renderIv();});
+}
+function schedule(si,ii){const k=si+'_'+ii;clearTimeout(timers[k]);const s=document.getElementById('sv_'+k);if(s)s.textContent='儲存中…';
+  timers[k]=setTimeout(async()=>{const it=D.interview.sections[si].items[ii];
+    try{await api('/interview',{method:'PUT',body:JSON.stringify({items:[{si,ii,a:it.a,rows:it.rows}]})});const s2=document.getElementById('sv_'+k);if(s2)s2.textContent='已儲存';}
+    catch(e){toast('儲存失敗：'+e.message,true);}},800);}
+load();
+</script></body></html>
