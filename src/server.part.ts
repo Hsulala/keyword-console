@@ -258,8 +258,9 @@ app.post("/api/admin/clients/:id/keywords", async c => {
         updated++;
       } else {
         const nid = crypto.randomUUID();
-        await tx`INSERT INTO keywords (id,client_id,category_id,kw,vol,hi,comp,intent,content,note,rec)
-          VALUES (${nid},${id},${r.category_id || b.category_id || null},${kw},${num(r.vol)},${num(r.hi)},${r.comp || ""},${r.intent || ""},${r.content || ""},${r.note || ""},${!!r.rec})`;
+        const [mx] = await tx`SELECT coalesce(max(sort),0)::int AS m FROM keywords WHERE client_id=${id}`;
+        await tx`INSERT INTO keywords (id,client_id,category_id,kw,vol,hi,comp,intent,content,note,rec,hidden,sort)
+          VALUES (${nid},${id},${r.category_id || b.category_id || null},${kw},${num(r.vol)},${num(r.hi)},${r.comp || ""},${r.intent || ""},${r.content || ""},${r.note || ""},${!!r.rec},${!b.visible},${mx.m + 1})`;
         map.set(k, nid); added++;
       }
     }
@@ -283,12 +284,24 @@ app.patch("/api/admin/keywords/:kid", async c => {
   if (f("hidden")) await sql`UPDATE keywords SET hidden=${!!b.hidden} WHERE id=${kid}`;
   return c.json({ ok: true });
 });
+app.post("/api/admin/keywords/reorder", async c => {
+  const b = await c.req.json(); const ids: string[] = b.ids || [];
+  await sql.begin(async tx => { let i = 0; for (const id of ids) { i++; await tx`UPDATE keywords SET sort=${i}, category_id=${b.category_id || null} WHERE id=${id}`; } });
+  return c.json({ ok: true });
+});
+app.post("/api/admin/categories/reorder", async c => {
+  const b = await c.req.json(); const ids: string[] = b.ids || [];
+  await sql.begin(async tx => { let i = 0; for (const id of ids) { i++; await tx`UPDATE categories SET sort=${i} WHERE id=${id}`; } });
+  return c.json({ ok: true });
+});
 app.post("/api/admin/keywords/bulk", async c => {
   const b = await c.req.json(); const ids: string[] = b.ids || [];
   if (!ids.length) return c.json({ ok: true });
   if (b.action === "move") await sql`UPDATE keywords SET category_id=${b.category_id || null} WHERE id IN ${sql(ids)}`;
   if (b.action === "hide") await sql`UPDATE keywords SET hidden=true WHERE id IN ${sql(ids)}`;
   if (b.action === "show") await sql`UPDATE keywords SET hidden=false WHERE id IN ${sql(ids)}`;
+  if (b.action === "rec") await sql`UPDATE keywords SET rec=true WHERE id IN ${sql(ids)}`;
+  if (b.action === "unrec") await sql`UPDATE keywords SET rec=false WHERE id IN ${sql(ids)}`;
   if (b.action === "delete") {
     const used = await sql`SELECT DISTINCT keyword_id FROM selections WHERE keyword_id IN ${sql(ids)}`;
     const usedSet = new Set(used.map((r: any) => r.keyword_id));
@@ -354,11 +367,11 @@ app.post("/api/ops/curate", async c => {
       for (const it of cat.items || []) {
         ks++; const k = kwKey(it.kw); let kid = map.get(k);
         if (kid) {
-          await tx`UPDATE keywords SET category_id=${cid}, hidden=false, sort=${ks}, intent=${it.intent || ""}, content=${it.content || ""}, path=${it.path || ""}, note=${it.note || ""}, rec=${!!it.rec}, vol=coalesce(${num(it.vol)},vol), hi=coalesce(${num(it.hi)},hi) WHERE id=${kid}`;
+          await tx`UPDATE keywords SET category_id=${cid}, hidden=false, sort=${ks}, intent=${it.intent || ""}, content=${it.content || ""}, path=${it.path || ""}, note=${it.note || ""}, rec=${!!it.rec}, comp=coalesce(nullif(${it.comp || ""},''),comp), vol=coalesce(${num(it.vol)},vol), hi=coalesce(${num(it.hi)},hi) WHERE id=${kid}`;
           report.updated++;
         } else {
           kid = crypto.randomUUID();
-          await tx`INSERT INTO keywords (id,client_id,category_id,kw,vol,hi,intent,content,path,note,rec,sort) VALUES (${kid},${id},${cid},${normKw(it.kw)},${num(it.vol)},${num(it.hi)},${it.intent || ""},${it.content || ""},${it.path || ""},${it.note || ""},${!!it.rec},${ks})`;
+          await tx`INSERT INTO keywords (id,client_id,category_id,kw,vol,hi,comp,intent,content,path,note,rec,sort) VALUES (${kid},${id},${cid},${normKw(it.kw)},${num(it.vol)},${num(it.hi)},${it.comp || ""},${it.intent || ""},${it.content || ""},${it.path || ""},${it.note || ""},${!!it.rec},${ks})`;
           map.set(k, kid); report.added++;
         }
         keep.add(kid);
@@ -401,6 +414,11 @@ app.post("/api/ops/past-select", async c => {
 });
 
 
+app.post("/api/ops/clients", async c => {
+  const T = Bun.env.DEPLOY_TOKEN || "";
+  if (!T || !safeEq(c.req.header("x-deploy-token") || "", T)) return c.json({ error: "forbidden" }, 403);
+  return c.json(await sql`SELECT id, name, contract_total, (SELECT count(*)::int FROM keywords k WHERE k.client_id=clients.id) AS kws FROM clients ORDER BY created_at`);
+});
 app.post("/api/ops/client", async c => {
   const T = Bun.env.DEPLOY_TOKEN || "";
   if (!T || !safeEq(c.req.header("x-deploy-token") || "", T)) return c.json({ error: "forbidden" }, 403);

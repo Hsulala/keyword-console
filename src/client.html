@@ -137,7 +137,7 @@ let prio='all', show='all';
 function counts(){const P=D.period;const n=D.selected.length;return{n,quota:P?P.quota:0,rem:P?Math.max(0,P.quota-n):0};}
 function catName(id){const c=D.cats.find(x=>x.id===id);return c?c.name:'未分類';}
 function catsList(){const list=D.cats.filter(c=>D.kws.some(k=>k.c===c.id));if(D.kws.some(k=>!k.c||!D.cats.find(c=>c.id===k.c)))list.push({id:'',name:'未分類',note:''});return list;}
-function ordered(){const order=catsList().map(c=>c.id);return D.kws.slice().sort((a,b)=>(order.indexOf(a.c||'')-order.indexOf(b.c||''))||((!!D.past[a.id])-(!!D.past[b.id]))||(b.rec-a.rec)||((b.vol||0)-(a.vol||0)));}
+function ordered(){const order=catsList().map(c=>c.id);const pos=new Map(D.kws.map((k,i)=>[k.id,i]));return D.kws.slice().sort((a,b)=>(order.indexOf(a.c||'')-order.indexOf(b.c||''))||((!!D.past[a.id])-(!!D.past[b.id]))||(pos.get(a.id)-pos.get(b.id)));}
 function renderSelect(){
   const P=D.period; const pane=document.getElementById('pane');
   if(!P){pane.innerHTML='<section class="pane"><div class="plain">目前沒有開放選題的期別，請聯繫您的顧問。</div></section>';return;}
