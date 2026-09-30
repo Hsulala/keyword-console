@@ -78,9 +78,25 @@ body{background:var(--bg)}
 .donebox{background:var(--teal-soft);border:1px solid rgba(20,134,111,.35);color:var(--ink);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:14px}
 .pastbox{margin-top:14px;font-size:14px}.pastbox summary{cursor:pointer;color:var(--muted)}
 .pastbox ul{margin:8px 0 0;padding-left:1.1em;color:var(--muted)}
-.mbar{display:none}
+.mbar{display:none}.mbar:empty{display:none}
 section.pane{padding:22px 0 60px}
 .plain{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px;margin-top:4px}
+.report-page{background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow)}
+.report-jump{display:flex;align-items:center;gap:4px;padding:10px 18px;background:var(--card);border-bottom:1px solid var(--line);overflow:auto;position:sticky;top:0;z-index:8}
+.report-jump a{white-space:nowrap;text-decoration:none;color:var(--muted);font-weight:700;font-size:13px;padding:7px 10px;border-radius:8px}
+.report-jump a:hover{background:var(--pale);color:var(--ink)}
+.report-hero{background:linear-gradient(135deg,#10283d 0%,#1b3e59 72%,#174b55 100%);color:#fff;padding:42px;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(330px,.75fr);gap:38px;align-items:center;position:relative;overflow:hidden}
+.report-hero:before{content:"";position:absolute;width:430px;height:430px;border:1px solid rgba(255,255,255,.09);border-radius:50%;right:-160px;top:-230px;box-shadow:0 0 0 50px rgba(255,255,255,.025),0 0 0 110px rgba(255,255,255,.018)}
+.report-hero-copy,.keyword-map{position:relative;z-index:1}.report-client{font-size:13px;color:#a8dcd0;font-weight:800;letter-spacing:.08em;margin:0 0 9px;text-transform:uppercase}
+.report-hero h1{font-size:clamp(2.1rem,4vw,3.5rem);line-height:1.08;margin:0;letter-spacing:-.035em}.report-subtitle{font-size:16px;line-height:1.7;color:#d8e5ed;max-width:720px;margin:16px 0 0}
+.report-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:24px}.report-stats div{padding:13px 14px;border-radius:13px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07)}
+.report-stats b{display:block;font-size:24px;line-height:1.15}.report-stats span{display:block;color:#bdd0dc;font-size:12px;margin-top:5px}.report-meta{display:flex;gap:15px 26px;flex-wrap:wrap;margin-top:22px;color:#c8d8e2;font-size:13px}.report-meta b{color:#fff;margin-left:5px}
+.keyword-map{background:rgba(7,22,34,.46);border:1px solid rgba(255,255,255,.17);border-radius:20px;padding:21px;box-shadow:0 24px 60px rgba(0,0,0,.2)}.map-head{font:700 11px/1.4 "IBM Plex Sans",sans-serif;letter-spacing:.12em;color:#9fc5d3;margin-bottom:13px}
+.map-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.map-slot{border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.075);color:#fff;border-radius:11px;padding:12px;text-align:left;cursor:pointer}.map-slot:hover{border-color:#70cbb7;background:rgba(112,203,183,.13)}.map-slot:last-child{grid-column:1/-1}.map-slot span{display:block;color:#bcd0db;font-size:12px}.map-slot b{display:block;font-size:25px;margin-top:3px}.map-note{font-size:12px;color:#9fb8c7;margin:11px 0 0}
+.report-body{padding:8px 42px 45px}.report-section{padding:38px 0 4px;scroll-margin-top:58px}.section-kicker{margin:0 0 6px;color:var(--teal);font-weight:800;font-size:13px;letter-spacing:.08em}.report-section>h2{font-size:clamp(1.55rem,2.6vw,2.15rem);letter-spacing:-.02em;margin:0 0 8px}.section-intro{color:var(--muted);max-width:820px;margin:0 0 18px;line-height:1.65}
+.report-overview{display:grid;grid-template-columns:1fr 1fr;gap:22px}.chart-card{border:1px solid var(--line);border-radius:16px;padding:18px}.chart-card h3{margin:0 0 4px}.chart-note{font-size:12px;color:var(--muted);margin:0 0 16px}.bars{display:grid;gap:8px}.bar-row{display:grid;grid-template-columns:minmax(100px,1fr) minmax(90px,2fr) 58px;gap:9px;align-items:center;font-size:12.5px}.bar-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.bar-track{height:9px;background:var(--pale);border-radius:6px;overflow:hidden}.bar-track i{display:block;height:100%;background:var(--teal);border-radius:6px}.chart-card.bid .bar-track i{background:var(--orange)}.bar-val{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.report-table-wrap{overflow:auto;border:1px solid var(--line);border-radius:16px}.report-table{width:100%;border-collapse:collapse;min-width:980px}.report-table th{position:sticky;top:0;background:var(--pale);text-align:left;font-size:12px;color:var(--muted);padding:11px 12px;border-bottom:1px solid var(--line)}.report-table td{padding:12px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:top}.report-table tr:last-child td{border-bottom:0}.report-table .num{text-align:right;font-variant-numeric:tabular-nums}.priority{display:inline-block;border-radius:999px;padding:3px 8px;background:var(--blue-soft);font-size:11px;font-weight:800}.priority.top{background:var(--amber-soft);color:var(--amber)}
+.content-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.content-card{border:1px solid var(--line);border-radius:14px;padding:16px}.content-card h3{font-size:15px;margin:0}.content-vol{font-size:12px;color:var(--teal);font-weight:800;margin-top:3px}.content-card ul{margin:10px 0 0;padding-left:18px;color:var(--muted);font-size:13px}.report-sources{border-top:1px solid var(--line);margin-top:34px;padding-top:24px}.report-sources h3{font-size:16px}.report-sources ul{padding-left:20px}
 .findings{display:grid;grid-template-columns:1fr 1fr;border-top:2px solid var(--ink);margin-top:14px}
 .finding{padding:18px 18px 18px 0;border-bottom:1px solid var(--line)}
 .finding:nth-child(even){padding-left:18px;border-left:1px solid var(--line)}
@@ -96,8 +112,9 @@ code.kwc{font-family:inherit;background:var(--pale);padding:0 6px;border-radius:
 .sec{margin-top:30px}.sec h2 span{color:var(--teal);margin-right:8px}
 .q table input{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:6px;padding:5px 7px;font:inherit;font-size:14px;width:100%;min-width:8em}
 .gloss{display:grid;grid-template-columns:repeat(3,1fr);gap:0 24px}.gloss div{padding:10px 0;border-bottom:1px solid var(--line)}.gloss b{display:block}
-@media (max-width:1100px){.workspace{grid-template-columns:1fr}.side{position:static}.toolbar{grid-template-columns:1fr 1fr}}
+@media (max-width:1100px){.workspace{grid-template-columns:1fr}.side{position:static}.toolbar{grid-template-columns:1fr 1fr}.report-hero{grid-template-columns:1fr}.keyword-map{max-width:680px}.report-overview{grid-template-columns:1fr}}
 @media (max-width:760px){.shell{padding:12px 12px 90px}.cards{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}.toolbar{position:static;grid-template-columns:1fr}.hero{padding:22px 20px}.ktitle,.kmain,.kdesc{margin-left:0}.findings,.steps,.gloss{grid-template-columns:1fr}.finding:nth-child(even){padding-left:0;border-left:0}
+ .report-page{border-radius:16px}.report-hero{padding:28px 20px;gap:24px}.report-stats{grid-template-columns:1fr}.report-body{padding:4px 20px 32px}.report-jump{padding:8px}.content-grid{grid-template-columns:1fr}.map-grid{grid-template-columns:1fr}.map-slot:last-child{grid-column:auto}.bar-row{grid-template-columns:96px 1fr 48px}
  .mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--navy);color:#fff;padding:10px 14px;gap:12px;align-items:center;box-shadow:0 -6px 20px rgba(0,0,0,.2)}
  .mbar b{font-size:20px}.mbar .grow{flex:1}.mbar button{border:0;background:var(--teal);color:#fff;font-weight:800;border-radius:10px;padding:9px 14px}}
 </style></head><body>
@@ -106,13 +123,13 @@ code.kwc{font-family:inherit;background:var(--pale);padding:0 6px;border-radius:
 <script>
 const TOKEN=location.pathname.split('/').pop();
 const API=p=>'/api/c/'+TOKEN+p;
-let D=null, tab='select', filter='all', q='', onlySel=false;
+let D=null, tab=null, filter='all', q='', onlySel=false;
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=(v,d=0)=>v==null?'':Number(v).toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
 function toast(m,err){const t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
 async function api(p,opt={}){const r=await fetch(API(p),{credentials:'same-origin',headers:{'content-type':'application/json'},...opt});const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(j.error||'錯誤'),{status:r.status,body:j});return j;}
 async function load(){
-  try{D=await api('/data');document.getElementById('gate').hidden=true;document.getElementById('app').hidden=false;document.title=D.name+'｜關鍵字選擇';render();}
+  try{D=await api('/data');const hasReport=D.report&&((D.report.findings||[]).length||(D.report.steps||[]).length);if(!tab)tab=D.pastCount===0&&hasReport?'report':'select';document.getElementById('gate').hidden=true;document.getElementById('app').hidden=false;render();}
   catch(e){ if(e.status===401){document.getElementById('gate').hidden=false;document.getElementById('pin').focus();} else document.body.innerHTML='<div class="gate"><div class="card"><h1>無法載入</h1><p class="muted">'+esc(e.message)+'</p></div></div>'; }
 }
 document.getElementById('pinForm').onsubmit=async e=>{e.preventDefault();const pin=document.getElementById('pin').value.trim();
@@ -120,12 +137,14 @@ document.getElementById('pinForm').onsubmit=async e=>{e.preventDefault();const p
 
 function render(){
   const hasReport=D.report&&((D.report.findings||[]).length||(D.report.steps||[]).length);
+  const firstSelection=D.pastCount===0&&hasReport;
+  if(tab==='report'&&!hasReport)tab='select';
+  if(tab==='iv'&&!D.interview)tab=hasReport?'report':'select';
+  document.title=D.name+'｜'+(tab==='report'?'關鍵字策略報告':tab==='iv'?'產業訪談表':'關鍵字選擇');
   document.getElementById('app').innerHTML=`<div class="shell">
    <div class="nav"><div class="brand">${esc(D.name)}<small>MaKarma 瑪卡鎷行銷｜SEO 關鍵字</small></div>
     <div class="tabs2" role="tablist">
-     <button role="tab" data-t="select" aria-selected="${tab==='select'}">關鍵字選題</button>
-     ${hasReport?`<button role="tab" data-t="report" aria-selected="${tab==='report'}">關鍵字報告</button>`:''}
-     ${D.interview?`<button role="tab" data-t="iv" aria-selected="${tab==='iv'}">產業訪談表</button>`:''}
+     ${firstSelection?`${hasReport?`<button role="tab" data-t="report" aria-selected="${tab==='report'}">關鍵字報告</button>`:''}${D.interview?`<button role="tab" data-t="iv" aria-selected="${tab==='iv'}">產業訪談表</button>`:''}<button role="tab" data-t="select" aria-selected="${tab==='select'}">關鍵字選題</button>`:`<button role="tab" data-t="select" aria-selected="${tab==='select'}">關鍵字選題</button>${hasReport?`<button role="tab" data-t="report" aria-selected="${tab==='report'}">關鍵字報告</button>`:''}${D.interview?`<button role="tab" data-t="iv" aria-selected="${tab==='iv'}">產業訪談表</button>`:''}`}
     </div></div>
    <main id="pane"></main></div><div class="mbar" id="mbar"></div>`;
   document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;render();window.scrollTo(0,0);});
@@ -230,14 +249,30 @@ function downloadCsv(){const rows=[['編號','分類','主關鍵字','建議文�
 function rich(s){return esc(s).replace(/`([^`]+)`/g,'<code class="kwc">$1</code>');}
 function renderReport(){const R=D.report||{};const m=R.meta||{};
   const groups={};D.kws.filter(k=>k.content).forEach(k=>(groups[k.content]=groups[k.content]||[]).push(k));
-  document.getElementById('pane').innerHTML=`<div><section class="pane plain">
-   <h1>${esc(m.title||'關鍵字策略報告')}</h1>${m.subtitle?`<p class="muted" style="max-width:44em">${esc(m.subtitle)}</p>`:''}
-   <p class="small muted">${[m.date&&'報告日期 '+m.date,m.market&&'市場 '+m.market,m.period&&'數據期間 '+m.period].filter(Boolean).map(esc).join('｜')}</p>
-   ${(R.findings||[]).length?`<h2 style="margin-top:28px">重點結論</h2><div class="findings">${R.findings.map(f=>`<div class="finding"><div class="k">${esc(f.k)}</div><h3>${esc(f.t)}</h3><p>${rich(f.b)}</p></div>`).join('')}</div>`:''}
-   ${Object.keys(groups).length?`<h2 style="margin-top:32px">關鍵字與內容對應</h2><div class="tbl-scroll" style="margin-top:12px"><table><thead><tr><th>建議內容</th><th>對應關鍵字</th><th class="num">月搜尋量合計</th></tr></thead><tbody>${Object.entries(groups).map(([k,ks])=>`<tr><td><b>${esc(k)}</b></td><td>${ks.map(x=>esc(x.kw)).join('、')}</td><td class="num">${fmt(ks.reduce((a,x)=>a+(x.vol||0),0))}</td></tr>`).join('')}</tbody></table></div>`:''}
-   ${(R.steps||[]).length?`<h2 style="margin-top:32px">執行與追蹤</h2><ol class="steps">${R.steps.map(s=>`<li><b>${esc(s.t)}</b><span class="muted">${esc(s.d)}</span></li>`).join('')}</ol>`:''}
-   ${(R.sources||[]).length?`<h3 style="margin-top:32px">資料來源與判讀說明</h3><ul class="muted small">${R.sources.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>`:''}
-  </section></div>`;}
+  const kws=D.kws.slice(), total=kws.reduce((a,k)=>a+(k.vol||0),0), priced=kws.filter(k=>k.hi!=null), maxBid=priced.length?Math.max(...priced.map(k=>Number(k.hi))):0;
+  const cats=catsList().map(c=>({name:c.name,count:kws.filter(k=>(k.c||'')===c.id).length})).filter(c=>c.count);
+  const topVol=kws.filter(k=>k.vol!=null).sort((a,b)=>b.vol-a.vol).slice(0,12), volMax=Math.max(1,...topVol.map(k=>k.vol));
+  const topBid=priced.sort((a,b)=>b.hi-a.hi).slice(0,10), bidMax=Math.max(1,...topBid.map(k=>k.hi));
+  const priority=k=>k.rec?'優先':k.note&&/第一批/.test(k.note)?'第一批':k.note&&/不追/.test(k.note)?'不追':'後續';
+  document.getElementById('pane').innerHTML=`<article class="report-page">
+   <nav class="report-jump" aria-label="報告章節"><a href="#summary">重點結論</a><a href="#overview">數據概覽</a><a href="#keywords">關鍵字清單</a><a href="#content">內容對應</a><a href="#steps">執行與追蹤</a></nav>
+   <header class="report-hero"><div class="report-hero-copy"><p class="report-client">${esc(D.name)} × MaKarma 瑪卡鎷行銷</p><h1>${esc(m.title||'關鍵字策略報告')}</h1>${m.subtitle?`<p class="report-subtitle">${esc(m.subtitle)}</p>`:''}
+    <div class="report-stats"><div><b>${fmt(kws.length)}</b><span>追蹤關鍵字</span></div><div><b>${fmt(total)}</b><span>已知月搜尋量合計（${fmt(kws.filter(k=>k.vol!=null).length)} 組）</span></div><div><b>NT$${fmt(maxBid,2)}</b><span>最高頁首出價上限（${fmt(priced.length)} 組有出價）</span></div></div>
+    <div class="report-meta">${m.date?`<span>報告日期 <b>${esc(m.date)}</b></span>`:''}${m.market?`<span>市場 <b>${esc(m.market)}</b></span>`:''}${m.period?`<span>數據期間 <b>${esc(m.period)}</b></span>`:''}</div></div>
+    <aside class="keyword-map" aria-label="關鍵字分群"><div class="map-head">KEYWORD MAP / ${fmt(kws.length)} KEYWORDS</div><div class="map-grid">${cats.map(c=>`<button class="map-slot" data-catname="${esc(c.name)}"><span>${esc(c.name)}</span><b>${fmt(c.count)}</b></button>`).join('')}</div><p class="map-note">點選分類可直接查看該組關鍵字</p></aside>
+   </header><div class="report-body">
+    <section class="report-section" id="summary"><p class="section-kicker">重點結論</p><h2>產品詞帶來詢價，應用情境與徵才情境帶來更多被看見的機會</h2>${(R.findings||[]).length?`<div class="findings">${R.findings.map(f=>`<div class="finding"><div class="k">${esc(f.k)}</div><h3>${esc(f.t)}</h3><p>${rich(f.b)}</p></div>`).join('')}</div>`:''}</section>
+    <section class="report-section" id="overview"><p class="section-kicker">數據概覽</p><h2>搜尋量看需求大小，頁首出價看廣告市場價值</h2><p class="section-intro">月搜尋量與頁首出價上限來自 Google Ads 關鍵字規劃工具；數字越高，代表需求或廣告主付費意願越高。</p><div class="report-overview">
+     <div class="chart-card"><h3>月搜尋量</h3><p class="chart-note">依搜尋量由高到低，最多顯示前 12 組</p><div class="bars">${topVol.map(k=>`<div class="bar-row"><span class="bar-label" title="${esc(k.kw)}">${esc(k.kw)}</span><span class="bar-track"><i style="width:${Math.max(3,k.vol/volMax*100)}%"></i></span><span class="bar-val">${fmt(k.vol)}</span></div>`).join('')}</div></div>
+     <div class="chart-card bid"><h3>頁首出價上限（NT$）</h3><p class="chart-note">依出價由高到低，最多顯示前 10 組</p><div class="bars">${topBid.map(k=>`<div class="bar-row"><span class="bar-label" title="${esc(k.kw)}">${esc(k.kw)}</span><span class="bar-track"><i style="width:${Math.max(3,k.hi/bidMax*100)}%"></i></span><span class="bar-val">${fmt(k.hi,2)}</span></div>`).join('')}</div></div>
+    </div></section>
+    <section class="report-section" id="keywords"><p class="section-kicker">關鍵字清單</p><h2>${fmt(kws.length)} 組關鍵字，依搜尋情境分成 ${fmt(cats.length)} 類</h2><p class="section-intro">每組關鍵字都對應搜尋意圖與建議內容，作為網站架構、文章與徵才內容的規劃依據。</p><div class="report-table-wrap"><table class="report-table"><thead><tr><th>關鍵字</th><th>分類</th><th class="num">月搜尋量</th><th class="num">頁首出價</th><th>搜尋者在想什麼</th><th>建議內容</th><th>優先度</th></tr></thead><tbody>${ordered().map(k=>`<tr data-catrow="${esc(catName(k.c))}"><td><b>${esc(k.kw)}</b></td><td>${esc(catName(k.c))}</td><td class="num">${k.vol==null?'—':fmt(k.vol)}</td><td class="num">${k.hi==null?'—':'NT$'+fmt(k.hi,2)}</td><td>${esc(k.intent||'—')}</td><td>${esc(k.content||'—')}</td><td><span class="priority ${k.rec?'top':''}">${priority(k)}</span></td></tr>`).join('')}</tbody></table></div></section>
+    <section class="report-section" id="content"><p class="section-kicker">關鍵字與內容對應</p><h2>一份內容對準一組需求，避免多篇內容互搶同一個字</h2><p class="section-intro">依關鍵字清單的「建議內容」自動彙整，數字為該組已知月搜尋量合計。</p><div class="content-grid">${Object.entries(groups).sort((a,b)=>b[1].reduce((n,k)=>n+(k.vol||0),0)-a[1].reduce((n,k)=>n+(k.vol||0),0)).map(([name,ks])=>`<article class="content-card"><h3>${esc(name)}</h3><div class="content-vol">${fmt(ks.reduce((a,k)=>a+(k.vol||0),0))} 次／月</div><ul>${ks.map(k=>`<li>${esc(k.kw)}</li>`).join('')}</ul></article>`).join('')}</div></section>
+    ${(R.steps||[]).length?`<section class="report-section" id="steps"><p class="section-kicker">執行與追蹤</p><h2>關鍵字清單會隨實際搜尋數據持續調整</h2><ol class="steps">${R.steps.map(s=>`<li><b>${esc(s.t)}</b><span class="muted">${esc(s.d)}</span></li>`).join('')}</ol></section>`:''}
+    ${(R.sources||[]).length?`<aside class="report-sources"><h3>資料來源與判讀說明</h3><ul class="muted small">${R.sources.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></aside>`:''}
+   </div></article>`;
+  document.querySelectorAll('.map-slot').forEach(b=>b.onclick=()=>{document.getElementById('keywords').scrollIntoView({behavior:'smooth'});document.querySelectorAll('[data-catrow]').forEach(r=>r.hidden=r.dataset.catrow!==b.dataset.catname);});
+}
 
 /* ---------- interview ---------- */
 const timers={};
